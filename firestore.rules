@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper to fetch user's role document by email (converted to lowercase)
+    function getRole(email) {
+      return get(/databases/$(database)/documents/userRoles/$(email.lower())).data;
+    }
+    
+    // Helper to verify if user has active admin privileges
+    function isActiveAdmin(email) {
+      return email != null && 
+             getRole(email).active == true && 
+             getRole(email).accessMode == 'admin';
+    }
+
+    // Role-based document access matching
+    match /userRoles/{email} {
+      // Any authenticated user can read role documents to verify access
+      allow read: if request.auth != null;
+      
+      // Allow writing if the user is an active admin, OR if the user is the master admin (durkeshwaran14@gmail.com)
+      allow write: if request.auth != null && (
+        isActiveAdmin(request.auth.token.email) || 
+        request.auth.token.email.lower() == 'durkeshwaran14@gmail.com'
+      );
+    }
+    
+    match /members/{memberId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && (
+        isActiveAdmin(request.auth.token.email) || 
+        request.auth.token.email.lower() == 'durkeshwaran14@gmail.com'
+      );
+    }
+    
+    match /sessions/{sessionId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && (
+        isActiveAdmin(request.auth.token.email) || 
+        request.auth.token.email.lower() == 'durkeshwaran14@gmail.com'
+      );
+    }
+
+    match /settings/{settingsId} {
+      allow read, write: if request.auth != null && (
+        isActiveAdmin(request.auth.token.email) || 
+        request.auth.token.email.lower() == 'durkeshwaran14@gmail.com'
+      );
+    }
+  }
+}
