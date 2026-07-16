@@ -100,7 +100,7 @@
   --mobile-nav-height: 64px;
   --sidebar-width: 240px;
   --container-max: 1280px;
-  --content-padding: 32px;
+  --content-padding: clamp(16px, 3vw, 32px);
 }
 
 /* ============================================================
@@ -1726,9 +1726,11 @@ tbody tr:last-child td {
   width: 100%;
   max-width: 480px;
   max-height: 90vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   box-shadow: var(--shadow-xl);
   animation: modalSlideUp 0.3s ease-out;
+  overflow: hidden;
 }
 
 .modal-lg {
@@ -1774,6 +1776,8 @@ tbody tr:last-child td {
 
 .modal-body {
   padding: 24px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .modal-footer {
@@ -2343,287 +2347,410 @@ tbody tr:last-child td {
 }
 
 /* ============================================================
-   RESPONSIVE — TABLET
+   RESPONSIVE DESIGN Breakpoints
    ============================================================ */
-@media (max-width: 768px) {
+
+/* --- LAPTOP / SMALL DESKTOP (1025px to 1280px) --- */
+@media (min-width: 1025px) and (max-width: 1280px) {
+  .dashboard-stats {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* --- TABLETS (768px to 1024px) --- */
+@media (min-width: 768px) and (max-width: 1024px) {
   :root {
-    --content-padding: 16px;
-    --nav-height: 56px;
+    --content-padding: 20px;
+    --nav-height: 64px;
   }
 
-  .nav-tabs {
-    display: flex !important;
-    align-items: center !important;
-    gap: 2px !important;
-    margin-left: 10px !important;
-    margin-right: 10px !important;
-    flex: 1 !important;
-    min-width: 0 !important;
-    flex-shrink: 1 !important;
-  }
-
-  .nav-tab {
-    display: flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-    padding: 6px 8px !important;
-    font-size: 0.75rem !important;
-    flex-shrink: 1 !important;
-    min-width: 0 !important;
-  }
-
-  .nav-tab i {
-    font-size: 0.8rem !important;
-  }
-
-  .nav-hamburger {
-    display: none;
-  }
-
-  /* Top Navbar Mobile Adjustments */
+  /* Compress Desktop Navbar to fit Tablet width */
   #navbar {
-    padding: 0 8px !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    white-space: nowrap !important;
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-    /* Firefox */
-  }
-
-  #navbar::-webkit-scrollbar {
-    display: none !important;
-    /* Chrome, Safari, Opera */
+    padding: 0 16px !important;
+    gap: 8px !important;
   }
 
   .nav-brand {
-    gap: 6px !important;
-    flex-shrink: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-  }
-
-  .nav-brand-icon {
-    width: 28px !important;
-    height: 28px !important;
-    flex-shrink: 0 !important;
+    gap: 8px !important;
   }
 
   .nav-brand span {
-    font-size: 0.8rem !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-    flex-shrink: 0 !important;
+    font-size: 0.9rem !important;
   }
 
-  .nav-actions {
-    gap: 4px !important;
-    margin-left: auto !important;
-    flex-shrink: 0 !important;
-    display: flex !important;
-    align-items: center !important;
+  .nav-tabs {
+    margin-left: 20px !important;
+    gap: 2px !important;
+  }
+
+  .nav-tab {
+    padding: 6px 10px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .nav-tab i {
+    font-size: 0.85rem !important;
   }
 
   .nav-admin-badge {
-    display: inline-flex !important;
     padding: 4px 8px !important;
-    font-size: 0.72rem !important;
-    gap: 4px !important;
-    max-width: none !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-    flex-shrink: 1 !important;
-    min-width: 60px !important;
-  }
-
-  .nav-admin-badge span {
-    white-space: nowrap !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
+    font-size: 0.75rem !important;
   }
 
   .nav-action-btn {
-    width: 32px !important;
-    height: 32px !important;
-    font-size: 0.8rem !important;
-    flex-shrink: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    width: 34px !important;
+    height: 34px !important;
   }
 
-  /* Bottom Mobile Nav Adjustments */
+  /* Dashboard Adjustments */
+  .dashboard-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  /* Settings Adjustments */
+  .settings-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Members Grid */
+  .members-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  }
+
+  /* Hide Bottom Mobile Nav on Tablet */
   .mobile-nav {
     display: none !important;
   }
 
   #main-content {
     margin-bottom: 0 !important;
-    display: none;
-  }
-
-  .nav-hamburger {
-    display: flex;
-  }
-
-  .nav-admin-badge {
-    display: none;
-  }
-
-  .mobile-nav {
-    display: block;
-  }
-
-  #main-content {
-    margin-bottom: var(--mobile-nav-height);
-  }
-
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard-stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .modal {
-    max-width: 100%;
-    margin: 0 12px;
-    max-height: 85vh;
-  }
-
-  .modal-lg {
-    max-width: 100%;
-  }
-
-  .section-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .search-bar {
-    max-width: 100%;
-  }
-
-  .reports-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .reports-toolbar select,
-  .reports-toolbar input[type="date"] {
-    max-width: 100%;
-  }
-
-  .attendance-meta {
-    flex-direction: column;
-  }
-
-  .attendance-meta input {
-    max-width: 100%;
-  }
-
-  .category-section-actions {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .attendance-item {
-    flex-wrap: wrap;
-  }
-
-  .attendance-status-btns {
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  .attendance-reason {
-    margin-left: 0;
-  }
-
-  .attendance-save-bar {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .attendance-summary {
-    justify-content: center;
-  }
-
-  .save-actions {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .report-card {
-    flex-wrap: wrap;
-  }
-
-  .report-attendance-bar {
-    width: 100%;
-    order: 10;
-  }
-
-  .settings-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .members-grid {
-    grid-template-columns: 1fr;
-  }
-
-  #toast-container {
-    bottom: calc(var(--mobile-nav-height) + 12px);
-    right: 12px;
-    left: 12px;
-  }
-
-  .toast {
-    min-width: auto;
-    max-width: 100%;
+    display: block !important;
   }
 }
 
-/* ============================================================
-   RESPONSIVE — SMALL MOBILE
-   ============================================================ */
-@media (max-width: 480px) {
+/* --- MOBILE DEVICES (<768px) --- */
+@media (max-width: 767px) {
+  :root {
+    --content-padding: 16px;
+    --nav-height: 64px; /* default mobile header height */
+  }
+
+  /* Top Navbar wraps Brand & Actions, hides Top Tabs */
+  #navbar {
+    height: auto !important;
+    min-height: 56px;
+    padding: 8px 16px !important;
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
+    gap: 8px 12px !important;
+  }
+
+  .nav-tabs {
+    display: none !important; /* Managed by bottom mobile navigation */
+  }
+
+  .nav-brand {
+    flex: 1 1 auto !important;
+    gap: 6px !important;
+  }
+
+  .nav-brand-icon {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .nav-brand span {
+    font-size: clamp(0.75rem, 3.5vw, 0.95rem) !important;
+    white-space: nowrap !important;
+  }
+
+  .nav-actions {
+    flex: 1 1 auto !important;
+    justify-content: flex-end !important;
+    margin-left: 0 !important;
+    gap: 6px !important;
+  }
+
+  .nav-admin-badge {
+    padding: 4px 8px !important;
+    font-size: 0.72rem !important;
+    gap: 4px !important;
+    min-width: auto !important;
+  }
+
+  .nav-action-btn {
+    width: 38px !important; /* Larger for better touch target */
+    height: 38px !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* Enable Bottom Mobile Nav */
+  .mobile-nav {
+    display: block !important;
+  }
+
+  #main-content {
+    margin-bottom: calc(var(--mobile-nav-height) + 16px) !important;
+    display: block !important;
+  }
+
+  /* Dashboard */
   .dashboard-stats {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
   }
 
   .stat-card {
-    padding: 16px;
+    padding: 16px !important;
   }
 
   .stat-value {
-    font-size: 1.4rem;
+    font-size: 1.45rem !important;
   }
 
   .section-header h1 {
-    font-size: 1.35rem;
+    font-size: 1.35rem !important;
+  }
+
+  /* Attendance Tab */
+  .attendance-meta {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .attendance-meta > div {
+    min-width: 100% !important;
+    width: 100% !important;
   }
 
   .category-section-header {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .category-section-actions {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .attendance-item {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .attendance-status-btns {
+    width: 100% !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+  }
+
+  .attendance-reason {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  .attendance-reason input {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .attendance-save-bar {
+    flex-direction: column !important;
+    text-align: center !important;
+    gap: 12px !important;
+    padding: 12px 16px !important;
+  }
+
+  .attendance-summary {
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: 8px 16px !important;
+  }
+
+  .save-actions {
+    width: 100% !important;
+    justify-content: center !important;
+    gap: 12px !important;
+  }
+
+  .save-actions button {
+    flex: 1 !important;
+  }
+
+  /* Members Tab */
+  .members-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .section-toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .search-bar {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .section-toolbar select {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .section-toolbar button {
+    width: 100% !important;
+  }
+
+  /* Reports Tab */
+  .reports-toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .reports-toolbar input[type="date"],
+  .reports-toolbar select,
+  .reports-toolbar button {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .report-card {
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    padding: 16px !important;
+  }
+
+  .report-attendance-bar {
+    width: 100% !important;
+    order: 10 !important;
+  }
+
+  .report-actions {
+    width: 100% !important;
+    justify-content: flex-end !important;
+    margin-top: 8px !important;
   }
 
   .report-summary-cards {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Settings Tab */
+  .settings-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Specific Admin Access Control table */
+  .table-container {
+    overflow-x: auto !important;
+    width: 100% !important;
+  }
+
+  /* Clean overrides for hardcoded inline widths in Drive Sync */
+  #settings-drive-sync-card div[style*="min-width: 250px"] {
+    min-width: auto !important;
+    text-align: left !important;
+    width: 100% !important;
+    margin-top: 8px !important;
+  }
+
+  #settings-drive-sync-card .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  #settings-drive-sync-card button {
+    width: 100% !important;
+  }
+
+  #settings-drive-sync-card .theme-switch {
+    margin: 4px 0 !important;
+  }
+
+  /* Forms & Modals */
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .modal {
+    max-width: calc(100% - 24px) !important;
+    margin: 12px !important;
+    max-height: 85vh !important;
+  }
+
+  .modal-lg {
+    max-width: calc(100% - 24px) !important;
+  }
+
+  /* Touch-friendly dimensions */
+  .btn,
+  .status-btn,
+  input,
+  select,
+  textarea {
+    min-height: 44px !important;
+  }
+
+  .btn-icon {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 1rem !important;
+  }
+
+  .nav-action-btn {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  /* Toasts */
+  #toast-container {
+    bottom: calc(var(--mobile-nav-height) + 12px) !important;
+    right: 12px !important;
+    left: 12px !important;
+  }
+
+  .toast {
+    min-width: auto !important;
+    max-width: 100% !important;
+  }
+}
+
+/* --- SMALL MOBILE BREAKPOINTS --- */
+@media (max-width: 480px) {
+  :root {
+    --nav-height: 108px; /* Increased to allow 2-row wrapped header spacing */
   }
 
   .login-card {
-    padding: 32px 24px;
+    padding: 32px 20px !important;
+  }
+}
+
+@media (max-width: 375px) {
+  .nav-brand span {
+    font-size: 0.72rem !important;
+  }
+
+  .nav-admin-badge {
+    padding: 2px 6px !important;
+    font-size: 0.65rem !important;
   }
 }
 
