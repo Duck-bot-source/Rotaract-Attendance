@@ -2117,7 +2117,28 @@ tbody tr:last-child td {
   }
 
   .nav-tabs {
-    display: none;
+    display: flex !important;
+    align-items: center !important;
+    gap: 2px !important;
+    margin-left: 10px !important;
+    margin-right: 10px !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+    flex-shrink: 1 !important;
+  }
+
+  .nav-tab {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 6px 8px !important;
+    font-size: 0.75rem !important;
+    flex-shrink: 1 !important;
+    min-width: 0 !important;
+  }
+
+  .nav-tab i {
+    font-size: 0.8rem !important;
   }
 
   .nav-hamburger {
@@ -2127,78 +2148,85 @@ tbody tr:last-child td {
   /* Top Navbar Mobile Adjustments */
   #navbar {
     padding: 0 8px !important;
-    overflow: hidden;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    white-space: nowrap !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important; /* Firefox */
+  }
+
+  #navbar::-webkit-scrollbar {
+    display: none !important; /* Chrome, Safari, Opera */
   }
 
   .nav-brand {
     gap: 6px !important;
-    flex-shrink: 1;
-    min-width: 0;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
   }
 
   .nav-brand-icon {
     width: 28px !important;
     height: 28px !important;
-    flex-shrink: 0;
+    flex-shrink: 0 !important;
   }
 
   .nav-brand span {
-    font-size: 0.75rem !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex-shrink: 1;
+    font-size: 0.8rem !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    flex-shrink: 0 !important;
   }
 
   .nav-actions {
     gap: 4px !important;
     margin-left: auto !important;
-    flex-shrink: 0;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
   }
 
   .nav-admin-badge {
     display: inline-flex !important;
-    padding: 4px 6px !important;
-    font-size: 0.7rem !important;
+    padding: 4px 8px !important;
+    font-size: 0.72rem !important;
     gap: 4px !important;
-    max-width: 85px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex-shrink: 1;
+    max-width: none !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    flex-shrink: 1 !important;
+    min-width: 60px !important;
   }
 
   .nav-admin-badge span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
   }
 
   .nav-action-btn {
     width: 32px !important;
     height: 32px !important;
     font-size: 0.8rem !important;
-    flex-shrink: 0;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   /* Bottom Mobile Nav Adjustments */
   .mobile-nav {
-    display: block;
-  }
-
-  .mobile-nav-item {
-    padding: 6px 4px !important;
-    font-size: 0.6rem !important;
-    flex: 1;
-    min-width: 0;
-  }
-
-  .mobile-nav-item i {
-    font-size: 1.0rem !important;
+    display: none !important;
   }
 
   #main-content {
-    margin-bottom: var(--mobile-nav-height);
+    margin-bottom: 0 !important;
   }
 
   .dashboard-grid {
