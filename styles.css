@@ -1651,6 +1651,46 @@ textarea {
 }
 
 /* ============================================================
+   MEMBERS SECTIONS & IMPORT WIDGETS
+   ============================================================ */
+.members-section {
+  margin-top: 32px;
+}
+
+.import-stats-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.import-stat-card {
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+
+.import-stat-card.valid {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--success);
+}
+
+.import-stat-card.dup {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  color: var(--warning);
+}
+
+.import-stat-card.invalid {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  color: var(--danger);
+}
+
+/* ============================================================
    TABLES
    ============================================================ */
 .table-container {
