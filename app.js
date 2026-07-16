@@ -1004,12 +1004,15 @@ function downloadTemplate(categoryPreset) {
   }
 }
 
-// Members search & filter event listeners
+// Members & Attendance search & filter event listeners
 document.addEventListener('DOMContentLoaded', () => {
   const searchEl = $('#member-search');
   const filterEl = $('#member-category-filter');
   if (searchEl) searchEl.addEventListener('input', debounce(renderMembersList, 250));
   if (filterEl) filterEl.addEventListener('change', renderMembersList);
+
+  const searchAttEl = $('#attendance-search');
+  if (searchAttEl) searchAttEl.addEventListener('input', debounce(renderAttendanceLists, 250));
 });
 
 // ============================================================
@@ -1017,59 +1020,112 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================================
 
 function renderAttendanceLists() {
-  renderCategoryAttendance('Board Official', '#board-officials-list', '#board-count-badge');
-  renderCategoryAttendance('Rotaractor', '#rotaractors-list', '#rotaractor-count-badge');
-  renderCategoryAttendance('Other Rotaractor', '#other-rotaractors-list', '#other-count-badge');
+  const searchQuery = ($('#attendance-search')?.value || '').toLowerCase();
+
+  const renderSection = (category, containerSel, countSel, sectionSel) => {
+    const section = $(sectionSel);
+    if (!section) return 0;
+
+    let members = getMembersByCategory(category);
+
+    if (searchQuery) {
+      members = members.filter(m =>
+        (m.name || '').toLowerCase().includes(searchQuery) ||
+        (m.role || '').toLowerCase().includes(searchQuery) ||
+        (m.department || '').toLowerCase().includes(searchQuery)
+      );
+    }
+
+    // Render count badge
+    const countEl = $(countSel);
+    if (countEl) countEl.textContent = members.length;
+
+    // Show/hide section based on search count
+    if (searchQuery && members.length === 0) {
+      section.classList.add('hidden');
+    } else {
+      section.classList.remove('hidden');
+    }
+
+    // Render list items
+    const container = $(containerSel);
+    if (!container) return members.length;
+
+    if (members.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state" style="padding:24px;">
+          <p style="color:var(--text-tertiary); font-size:0.85rem;">No ${category.toLowerCase()}s found</p>
+        </div>`;
+      return 0;
+    }
+
+    container.innerHTML = members.map(m => {
+      const att = APP.attendance[m.id] || {};
+      const presentActive = att.status === 'Present' ? 'present-active' : '';
+      const absentActive = att.status === 'Absent' ? 'absent-active' : '';
+      const lateActive = att.status === 'Late' ? 'late-active' : '';
+      const markedClass = att.status ? `marked-${att.status.toLowerCase()}` : '';
+      const showReason = att.status === 'Absent';
+
+      return `
+        <div class="attendance-item ${markedClass}" id="att-item-${m.id}">
+          <div class="attendance-member-info">
+            <div class="attendance-member-name">${escapeHtml(m.name)}</div>
+            <div class="attendance-member-role">${escapeHtml(m.role || 'Member')}</div>
+          </div>
+          <div class="attendance-status-btns">
+            <button class="status-btn ${presentActive}" onclick="markAttendance('${m.id}', 'Present')" title="Present">
+              <i class="fas fa-check"></i> P
+            </button>
+            <button class="status-btn ${absentActive}" onclick="markAttendance('${m.id}', 'Absent')" title="Absent">
+              <i class="fas fa-times"></i> A
+            </button>
+            <button class="status-btn ${lateActive}" onclick="markAttendance('${m.id}', 'Late')" title="Late">
+              <i class="fas fa-clock"></i> L
+            </button>
+          </div>
+        </div>
+        ${showReason ? `
+          <div class="attendance-reason" id="reason-${m.id}">
+            <input type="text" placeholder="Reason for absence (optional)" value="${escapeHtml(att.reason || '')}" onchange="updateReason('${m.id}', this.value)" style="max-width:100%;">
+          </div>` : ''}
+      `;
+    }).join('');
+
+    return members.length;
+  };
+
+  const boardCount = renderSection('Board Official', '#board-officials-list', '#board-count-badge', '#board-officials-section');
+  const rotaractorCount = renderSection('Rotaractor', '#rotaractors-list', '#rotaractor-count-badge', '#rotaractors-section');
+  const otherCount = renderSection('Other Rotaractor', '#other-rotaractors-list', '#other-count-badge', '#other-rotaractors-section');
+
   updateAttendanceCounts();
-}
 
-function renderCategoryAttendance(category, containerSel, countSel) {
-  const container = $(containerSel);
-  const countEl = $(countSel);
-  const members = getMembersByCategory(category);
-
-  if (countEl) countEl.textContent = members.length;
-
-  if (members.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state" style="padding:24px;">
-        <p style="color:var(--text-tertiary); font-size:0.85rem;">No ${category.toLowerCase()}s added yet</p>
-      </div>`;
-    return;
+  // Handle empty search results state
+  const totalMatches = boardCount + rotaractorCount + otherCount;
+  const emptyStateEl = $('#attendance-empty-state');
+  if (searchQuery && totalMatches === 0) {
+    if (!emptyStateEl) {
+      const el = document.createElement('div');
+      el.id = 'attendance-empty-state';
+      el.className = 'empty-state';
+      el.innerHTML = `
+        <div class="empty-state-icon"><i class="fas fa-users-slash"></i></div>
+        <h3>No matching members found</h3>
+        <p>Try searching for another name or role</p>
+      `;
+      const saveBar = $('#attendance-save-bar');
+      if (saveBar) {
+        $('#attendance-tab').insertBefore(el, saveBar);
+      } else {
+        $('#attendance-tab').appendChild(el);
+      }
+    } else {
+      emptyStateEl.classList.remove('hidden');
+    }
+  } else {
+    if (emptyStateEl) emptyStateEl.classList.add('hidden');
   }
-
-  container.innerHTML = members.map(m => {
-    const att = APP.attendance[m.id] || {};
-    const presentActive = att.status === 'Present' ? 'present-active' : '';
-    const absentActive = att.status === 'Absent' ? 'absent-active' : '';
-    const lateActive = att.status === 'Late' ? 'late-active' : '';
-    const markedClass = att.status ? `marked-${att.status.toLowerCase()}` : '';
-    const showReason = att.status === 'Absent';
-
-    return `
-      <div class="attendance-item ${markedClass}" id="att-item-${m.id}">
-        <div class="attendance-member-info">
-          <div class="attendance-member-name">${escapeHtml(m.name)}</div>
-          <div class="attendance-member-role">${escapeHtml(m.role || 'Member')}</div>
-        </div>
-        <div class="attendance-status-btns">
-          <button class="status-btn ${presentActive}" onclick="markAttendance('${m.id}', 'Present')" title="Present">
-            <i class="fas fa-check"></i> P
-          </button>
-          <button class="status-btn ${absentActive}" onclick="markAttendance('${m.id}', 'Absent')" title="Absent">
-            <i class="fas fa-times"></i> A
-          </button>
-          <button class="status-btn ${lateActive}" onclick="markAttendance('${m.id}', 'Late')" title="Late">
-            <i class="fas fa-clock"></i> L
-          </button>
-        </div>
-      </div>
-      ${showReason ? `
-        <div class="attendance-reason" id="reason-${m.id}">
-          <input type="text" placeholder="Reason for absence (optional)" value="${escapeHtml(att.reason || '')}" onchange="updateReason('${m.id}', this.value)" style="max-width:100%;">
-        </div>` : ''}
-    `;
-  }).join('');
 }
 
 function markAttendance(memberId, status) {
