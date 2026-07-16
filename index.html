@@ -1,24 +1,28 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ROTARACT CLUB OF PSVPEC — Attendance Management System</title>
-  <meta name="description" content="Professional attendance tracking and member management system for ROTARACT CLUB OF PSVPEC. Manage members, track attendance, and generate reports.">
+  <meta name="description"
+    content="Professional attendance tracking and member management system for ROTARACT CLUB OF PSVPEC. Manage members, track attendance, and generate reports.">
 
   <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- Stylesheet -->
   <link rel="stylesheet" href="styles.css">
 
-  
+
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="images/racpsvpec_logo.png">
 </head>
+
 <body>
 
   <!-- ============================================================
@@ -34,8 +38,10 @@
        ============================================================ -->
   <div id="login-screen">
     <div class="login-card">
-      <div class="login-logo" style="background:none; border-radius:0; box-shadow:none; height:auto; width:auto; margin-bottom:16px;">
-        <img src="images/racpsvpec_logo.png" alt="ROTARACT CLUB OF PSVPEC Logo" style="max-height:100px; margin:0 auto; object-fit:contain;">
+      <div class="login-logo"
+        style="background:none; border-radius:0; box-shadow:none; height:auto; width:auto; margin-bottom:16px;">
+        <img src="images/racpsvpec_logo.png" alt="ROTARACT CLUB OF PSVPEC Logo"
+          style="max-height:100px; margin:0 auto; object-fit:contain;">
       </div>
       <h1 style="font-size:1.45rem;">ROTARACT CLUB OF PSVPEC</h1>
       <p class="login-subtitle">Attendance Management System</p>
@@ -59,17 +65,25 @@
   <!-- ============================================================
        BLOCKED SCREEN (Restricted Access)
        ============================================================ -->
-  <div id="blocked-screen" class="hidden" style="display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--bg-body); padding:20px;">
+  <div id="blocked-screen" class="hidden"
+    style="display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--bg-body); padding:20px;">
     <div class="login-card" style="text-align:center; max-width:400px; width:100%;">
-      <div class="login-logo" style="background:none; border-radius:0; box-shadow:none; height:auto; width:auto; margin-bottom:16px;">
-        <img src="images/racpsvpec_logo.png" alt="ROTARACT CLUB OF PSVPEC Logo" style="max-height:100px; margin:0 auto; object-fit:contain;">
+      <div class="login-logo"
+        style="background:none; border-radius:0; box-shadow:none; height:auto; width:auto; margin-bottom:16px;">
+        <img src="images/racpsvpec_logo.png" alt="ROTARACT CLUB OF PSVPEC Logo"
+          style="max-height:100px; margin:0 auto; object-fit:contain;">
       </div>
-      <h2 style="font-size:1.3rem; margin-bottom:8px; color:var(--danger);"><i class="fas fa-ban" style="margin-right:8px;"></i>Access Restricted</h2>
-      <p id="blocked-message" style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:20px; line-height:1.5;">Your account is not assigned a role or has been deactivated. Please contact the administrator (Sergeant) to request access.</p>
-      <div style="background:var(--bg-secondary); padding:10px 14px; border-radius:var(--radius-md); font-size:0.85rem; color:var(--text-primary); margin-bottom:20px; word-break:break-all;">
+      <h2 style="font-size:1.3rem; margin-bottom:8px; color:var(--danger);"><i class="fas fa-ban"
+          style="margin-right:8px;"></i>Access Restricted</h2>
+      <p id="blocked-message"
+        style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:20px; line-height:1.5;">Your account is not
+        assigned a role or has been deactivated. Please contact the administrator (Sergeant) to request access.</p>
+      <div
+        style="background:var(--bg-secondary); padding:10px 14px; border-radius:var(--radius-md); font-size:0.85rem; color:var(--text-primary); margin-bottom:20px; word-break:break-all;">
         Logged in as: <strong id="blocked-user-email">email@domain.com</strong>
       </div>
-      <button class="btn btn-primary" onclick="handleBlockedLogout()" style="width:100%;"><i class="fas fa-sign-out-alt" style="margin-right:6px;"></i>Sign Out</button>
+      <button class="btn btn-primary" onclick="handleBlockedLogout()" style="width:100%;"><i class="fas fa-sign-out-alt"
+          style="margin-right:6px;"></i>Sign Out</button>
     </div>
   </div>
 
@@ -81,7 +95,8 @@
     <!-- ---- NAVBAR ---- -->
     <nav id="navbar">
       <div class="nav-brand" onclick="switchTab('dashboard')">
-        <div class="nav-brand-icon" style="background:none; display:flex; align-items:center; justify-content:center; width:40px; height:40px;">
+        <div class="nav-brand-icon"
+          style="background:none; display:flex; align-items:center; justify-content:center; width:40px; height:40px;">
           <img src="images/racpsvpec_logo.png" alt="Logo" style="max-height:100%; max-width:100%; object-fit:contain;">
           <img id="pdf-bg-logo" src="images/pdf_bg.png" alt="PDF Background Logo" style="display:none;">
         </div>
@@ -204,23 +219,34 @@
         <div class="section-header">
           <h1>Take Attendance</h1>
           <p>Mark attendance for today's event</p>
-          <div class="attendance-meta" style="display:flex; gap:16px; margin-top:16px; flex-wrap:wrap; align-items:flex-end;">
+          <div class="attendance-meta"
+            style="display:flex; gap:16px; margin-top:16px; flex-wrap:wrap; align-items:flex-end;">
             <div style="flex: 1; min-width: 140px;">
-              <label style="display:block; font-size:0.75rem; font-weight:600; text-transform:uppercase; margin-bottom:6px; color:var(--text-secondary);">Event Date</label>
+              <label
+                style="display:block; font-size:0.75rem; font-weight:600; text-transform:uppercase; margin-bottom:6px; color:var(--text-secondary);">Event
+                Date</label>
               <input type="date" id="attendance-date" title="Event Date" style="width:100%; padding:10px 14px;">
             </div>
             <div style="flex: 1; min-width: 120px;">
-              <label style="display:block; font-size:0.75rem; font-weight:600; text-transform:uppercase; margin-bottom:6px; color:var(--text-secondary);">Event Time</label>
+              <label
+                style="display:block; font-size:0.75rem; font-weight:600; text-transform:uppercase; margin-bottom:6px; color:var(--text-secondary);">Event
+                Time</label>
               <input type="time" id="attendance-time" title="Event Time" style="width:100%; padding:10px 14px;">
             </div>
             <div style="flex: 2; min-width: 240px;">
-              <label style="display:block; font-size:0.75rem; font-weight:600; text-transform:uppercase; margin-bottom:6px; color:var(--text-secondary);">Project Name / Event Name</label>
-              <input type="text" id="event-name" placeholder="Enter project / event name..." title="Event Name" style="width:100%; padding:10px 14px;">
+              <label
+                style="display:block; font-size:0.75rem; font-weight:600; text-transform:uppercase; margin-bottom:6px; color:var(--text-secondary);">Project
+                Name / Event Name</label>
+              <input type="text" id="event-name" placeholder="Enter project / event name..." title="Event Name"
+                style="width:100%; padding:10px 14px;">
             </div>
           </div>
-          <div class="attendance-meta" style="display:flex; gap:16px; margin-top:12px; flex-wrap:wrap; align-items:flex-end;">
+          <div class="attendance-meta"
+            style="display:flex; gap:16px; margin-top:12px; flex-wrap:wrap; align-items:flex-end;">
             <div style="flex: 1; min-width: 200px;">
-              <label style="display:block; font-size:0.75rem; font-weight:600; text-transform:uppercase; margin-bottom:6px; color:var(--text-secondary);">Service / Avenue</label>
+              <label
+                style="display:block; font-size:0.75rem; font-weight:600; text-transform:uppercase; margin-bottom:6px; color:var(--text-secondary);">Service
+                / Avenue</label>
               <select id="attendance-service" style="width:100%; padding:10px 14px;">
                 <option value="">Select Service</option>
                 <option value="Club Service">Club Service</option>
@@ -233,12 +259,17 @@
               </select>
             </div>
             <div style="flex: 1; min-width: 200px;" id="custom-service-wrapper" class="hidden">
-              <label style="display:block; font-size:0.75rem; font-weight:600; text-transform:uppercase; margin-bottom:6px; color:var(--text-secondary);">Custom Service Name</label>
-              <input type="text" id="attendance-service-custom" placeholder="Enter custom service name..." style="width:100%; padding:10px 14px;">
+              <label
+                style="display:block; font-size:0.75rem; font-weight:600; text-transform:uppercase; margin-bottom:6px; color:var(--text-secondary);">Custom
+                Service Name</label>
+              <input type="text" id="attendance-service-custom" placeholder="Enter custom service name..."
+                style="width:100%; padding:10px 14px;">
             </div>
             <div style="flex: 2; min-width: 240px;">
-              <label style="display:block; font-size:0.75rem; font-weight:600; text-transform:uppercase; margin-bottom:6px; color:var(--text-secondary);">Venue</label>
-              <input type="text" id="attendance-venue" placeholder="Enter event venue..." title="Event Venue" style="width:100%; padding:10px 14px;">
+              <label
+                style="display:block; font-size:0.75rem; font-weight:600; text-transform:uppercase; margin-bottom:6px; color:var(--text-secondary);">Venue</label>
+              <input type="text" id="attendance-venue" placeholder="Enter event venue..." title="Event Venue"
+                style="width:100%; padding:10px 14px;">
             </div>
           </div>
         </div>
@@ -252,10 +283,14 @@
               <span class="member-count-badge" id="board-count-badge">0</span>
             </h2>
             <div class="category-section-actions">
-              <button class="btn btn-sm btn-outline" onclick="markAllStatus('Board Official', 'Present')"><i class="fas fa-check-double"></i> All Present</button>
-              <button class="btn btn-sm btn-outline" onclick="markAllStatus('Board Official', 'Absent')"><i class="fas fa-times"></i> All Absent</button>
-              <button class="btn btn-sm btn-ghost" onclick="clearCategoryAttendance('Board Official')"><i class="fas fa-eraser"></i> Clear</button>
-              <button class="btn btn-sm btn-accent" onclick="openAddMemberModal('Board Official')"><i class="fas fa-plus"></i> Add</button>
+              <button class="btn btn-sm btn-outline" onclick="markAllStatus('Board Official', 'Present')"><i
+                  class="fas fa-check-double"></i> All Present</button>
+              <button class="btn btn-sm btn-outline" onclick="markAllStatus('Board Official', 'Absent')"><i
+                  class="fas fa-times"></i> All Absent</button>
+              <button class="btn btn-sm btn-ghost" onclick="clearCategoryAttendance('Board Official')"><i
+                  class="fas fa-eraser"></i> Clear</button>
+              <button class="btn btn-sm btn-accent" onclick="openAddMemberModal('Board Official')"><i
+                  class="fas fa-plus"></i> Add</button>
             </div>
           </div>
           <div class="attendance-list" id="board-officials-list"></div>
@@ -270,10 +305,14 @@
               <span class="member-count-badge" id="rotaractor-count-badge">0</span>
             </h2>
             <div class="category-section-actions">
-              <button class="btn btn-sm btn-outline" onclick="markAllStatus('Rotaractor', 'Present')"><i class="fas fa-check-double"></i> All Present</button>
-              <button class="btn btn-sm btn-outline" onclick="markAllStatus('Rotaractor', 'Absent')"><i class="fas fa-times"></i> All Absent</button>
-              <button class="btn btn-sm btn-ghost" onclick="clearCategoryAttendance('Rotaractor')"><i class="fas fa-eraser"></i> Clear</button>
-              <button class="btn btn-sm btn-accent" onclick="openAddMemberModal('Rotaractor')"><i class="fas fa-plus"></i> Add</button>
+              <button class="btn btn-sm btn-outline" onclick="markAllStatus('Rotaractor', 'Present')"><i
+                  class="fas fa-check-double"></i> All Present</button>
+              <button class="btn btn-sm btn-outline" onclick="markAllStatus('Rotaractor', 'Absent')"><i
+                  class="fas fa-times"></i> All Absent</button>
+              <button class="btn btn-sm btn-ghost" onclick="clearCategoryAttendance('Rotaractor')"><i
+                  class="fas fa-eraser"></i> Clear</button>
+              <button class="btn btn-sm btn-accent" onclick="openAddMemberModal('Rotaractor')"><i
+                  class="fas fa-plus"></i> Add</button>
             </div>
           </div>
           <div class="attendance-list" id="rotaractors-list"></div>
@@ -288,10 +327,14 @@
               <span class="member-count-badge" id="other-count-badge">0</span>
             </h2>
             <div class="category-section-actions">
-              <button class="btn btn-sm btn-outline" onclick="markAllStatus('Other Rotaractor', 'Present')"><i class="fas fa-check-double"></i> All Present</button>
-              <button class="btn btn-sm btn-outline" onclick="markAllStatus('Other Rotaractor', 'Absent')"><i class="fas fa-times"></i> All Absent</button>
-              <button class="btn btn-sm btn-ghost" onclick="clearCategoryAttendance('Other Rotaractor')"><i class="fas fa-eraser"></i> Clear</button>
-              <button class="btn btn-sm btn-accent" onclick="openAddMemberModal('Other Rotaractor')"><i class="fas fa-plus"></i> Add</button>
+              <button class="btn btn-sm btn-outline" onclick="markAllStatus('Other Rotaractor', 'Present')"><i
+                  class="fas fa-check-double"></i> All Present</button>
+              <button class="btn btn-sm btn-outline" onclick="markAllStatus('Other Rotaractor', 'Absent')"><i
+                  class="fas fa-times"></i> All Absent</button>
+              <button class="btn btn-sm btn-ghost" onclick="clearCategoryAttendance('Other Rotaractor')"><i
+                  class="fas fa-eraser"></i> Clear</button>
+              <button class="btn btn-sm btn-accent" onclick="openAddMemberModal('Other Rotaractor')"><i
+                  class="fas fa-plus"></i> Add</button>
             </div>
           </div>
           <div class="attendance-list" id="other-rotaractors-list"></div>
@@ -300,14 +343,20 @@
         <!-- Save Bar -->
         <div class="attendance-save-bar" id="attendance-save-bar">
           <div class="attendance-summary">
-            <span><i class="fas fa-check-circle" style="color:var(--success);"></i> Present: <strong id="att-present-count">0</strong></span>
-            <span><i class="fas fa-times-circle" style="color:var(--danger);"></i> Absent: <strong id="att-absent-count">0</strong></span>
-            <span><i class="fas fa-clock" style="color:var(--warning);"></i> Late: <strong id="att-late-count">0</strong></span>
-            <span><i class="fas fa-minus-circle" style="color:var(--text-tertiary);"></i> Unmarked: <strong id="att-unmarked-count">0</strong></span>
+            <span><i class="fas fa-check-circle" style="color:var(--success);"></i> Present: <strong
+                id="att-present-count">0</strong></span>
+            <span><i class="fas fa-times-circle" style="color:var(--danger);"></i> Absent: <strong
+                id="att-absent-count">0</strong></span>
+            <span><i class="fas fa-clock" style="color:var(--warning);"></i> Late: <strong
+                id="att-late-count">0</strong></span>
+            <span><i class="fas fa-minus-circle" style="color:var(--text-tertiary);"></i> Unmarked: <strong
+                id="att-unmarked-count">0</strong></span>
           </div>
           <div class="save-actions">
-            <button class="btn btn-outline" onclick="clearAllAttendance()"><i class="fas fa-eraser"></i> Clear All</button>
-            <button class="btn btn-primary" id="save-attendance-btn" onclick="saveAttendance()"><i class="fas fa-save"></i> Save Attendance</button>
+            <button class="btn btn-outline" onclick="clearAllAttendance()"><i class="fas fa-eraser"></i> Clear
+              All</button>
+            <button class="btn btn-primary" id="save-attendance-btn" onclick="saveAttendance()"><i
+                class="fas fa-save"></i> Save Attendance</button>
           </div>
         </div>
       </section>
@@ -330,7 +379,8 @@
               <option value="Rotaractor">Rotaractors</option>
               <option value="Other Rotaractor">Other Rotaractors</option>
             </select>
-            <button class="btn btn-primary" onclick="openAddMemberModal()"><i class="fas fa-plus"></i> Add Member</button>
+            <button class="btn btn-primary" onclick="openAddMemberModal()"><i class="fas fa-plus"></i> Add
+              Member</button>
           </div>
         </div>
 
@@ -360,7 +410,8 @@
               <option value="Absent">Absent Only</option>
               <option value="Late">Late Only</option>
             </select>
-            <button class="btn btn-outline btn-sm" onclick="clearReportFilters()"><i class="fas fa-filter-circle-xmark"></i> Clear Filters</button>
+            <button class="btn btn-outline btn-sm" onclick="clearReportFilters()"><i
+                class="fas fa-filter-circle-xmark"></i> Clear Filters</button>
           </div>
         </div>
 
@@ -409,7 +460,8 @@
                 <div class="settings-label">Signed in as</div>
                 <div class="settings-sublabel" id="settings-admin-email">admin@rotaract.club</div>
               </div>
-              <button class="btn btn-outline btn-sm" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+              <button class="btn btn-outline btn-sm" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i>
+                Logout</button>
             </div>
           </div>
 
@@ -433,19 +485,24 @@
           <!-- Access Control (Admin Only) -->
           <div class="settings-card hidden" id="settings-access-control-card" style="grid-column: 1 / -1;">
             <h3><i class="fas fa-users-cog"></i> Access Control</h3>
-            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:16px;">Manage user access roles and permissions (Sergeant = Admin, President & Secretary = Viewer).</p>
-            
+            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:16px;">Manage user access roles and
+              permissions (Sergeant = Admin, President & Secretary = Viewer).</p>
+
             <div style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
               <div style="flex:1; min-width:200px; position:relative;">
-                <input type="text" id="role-search" placeholder="Search users by email..." style="width:100%; padding:8px 12px; font-size:0.85rem;" oninput="renderUserRoles()">
+                <input type="text" id="role-search" placeholder="Search users by email..."
+                  style="width:100%; padding:8px 12px; font-size:0.85rem;" oninput="renderUserRoles()">
               </div>
-              <button class="btn btn-primary" onclick="openAddRoleModal()"><i class="fas fa-user-plus" style="margin-right:6px;"></i>Add User Role</button>
+              <button class="btn btn-primary" onclick="openAddRoleModal()"><i class="fas fa-user-plus"
+                  style="margin-right:6px;"></i>Add User Role</button>
             </div>
 
-            <div class="table-container" style="border:1px solid var(--border); border-radius:var(--radius-md); max-height:350px; overflow-y:auto;">
+            <div class="table-container"
+              style="border:1px solid var(--border); border-radius:var(--radius-md); max-height:350px; overflow-y:auto;">
               <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
                 <thead>
-                  <tr style="background:var(--bg-secondary); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:1;">
+                  <tr
+                    style="background:var(--bg-secondary); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:1;">
                     <th style="padding:12px 10px; text-align:left;">Email</th>
                     <th style="padding:12px 10px; text-align:left;">Club Position</th>
                     <th style="padding:12px 10px; text-align:left;">Access Mode</th>
@@ -460,17 +517,25 @@
             </div>
           </div>
           <!-- Google Drive Sync (Admin Only) -->
-          <div class="settings-card hidden" id="settings-drive-sync-card" style="grid-column: 1 / -1; margin-top: 16px;">
+          <div class="settings-card hidden" id="settings-drive-sync-card"
+            style="grid-column: 1 / -1; margin-top: 16px;">
             <h3><i class="fab fa-google-drive"></i> Google Drive Sync</h3>
-            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:16px;">Configure automated syncing of generated attendance PDFs to Google Drive. Requires an OAuth 2.0 Web Client ID configured in Google Cloud Console.</p>
+            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:16px;">Configure automated syncing
+              of generated attendance PDFs to Google Drive. Requires an OAuth 2.0 Web Client ID configured in Google
+              Cloud Console.</p>
 
-            <div class="form-row" style="margin-bottom:16px; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+            <div class="form-row"
+              style="margin-bottom:16px; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
               <div>
                 <label style="display:block; margin-bottom:4px;">Drive Status</label>
                 <div style="display:flex; align-items:center; gap:8px;">
-                  <span class="badge badge-absent" id="drive-status-badge" style="font-size:0.85rem; padding:6px 12px;"><i class="fas fa-circle-notch fa-spin" style="margin-right:6px;" id="drive-status-spinner"></i>Checking...</span>
-                  <button class="btn btn-primary hidden" id="drive-connect-btn" onclick="connectGoogleDrive()"><i class="fab fa-google" style="margin-right:6px;"></i>Connect Drive</button>
-                  <button class="btn btn-danger hidden" id="drive-disconnect-btn" onclick="disconnectGoogleDrive()"><i class="fas fa-unlink" style="margin-right:6px;"></i>Disconnect</button>
+                  <span class="badge badge-absent" id="drive-status-badge"
+                    style="font-size:0.85rem; padding:6px 12px;"><i class="fas fa-circle-notch fa-spin"
+                      style="margin-right:6px;" id="drive-status-spinner"></i>Checking...</span>
+                  <button class="btn btn-primary hidden" id="drive-connect-btn" onclick="connectGoogleDrive()"><i
+                      class="fab fa-google" style="margin-right:6px;"></i>Connect Drive</button>
+                  <button class="btn btn-danger hidden" id="drive-disconnect-btn" onclick="disconnectGoogleDrive()"><i
+                      class="fas fa-unlink" style="margin-right:6px;"></i>Disconnect</button>
                 </div>
               </div>
               <div style="font-size:0.75rem; color:var(--text-secondary); text-align: right; min-width: 250px;">
@@ -486,10 +551,12 @@
                 <input type="text" id="drive-folder-name" value="Rotaract_Attendance" style="width:100%;">
               </div>
               <div class="form-group">
-                <label>Folder ID <span style="font-size:0.75rem; color:var(--text-secondary);">(Optional / Auto-generated)</span></label>
+                <label>Folder ID <span style="font-size:0.75rem; color:var(--text-secondary);">(Optional /
+                    Auto-generated)</span></label>
                 <div style="display:flex; gap:8px;">
                   <input type="text" id="drive-folder-id" placeholder="Auto-created ID" style="flex:1;">
-                  <button class="btn btn-outline" id="drive-choose-folder-btn" onclick="loadGooglePicker()" disabled><i class="fas fa-folder-open" style="margin-right:6px;"></i>Choose Folder</button>
+                  <button class="btn btn-outline" id="drive-choose-folder-btn" onclick="loadGooglePicker()" disabled><i
+                      class="fas fa-folder-open" style="margin-right:6px;"></i>Choose Folder</button>
                 </div>
               </div>
             </div>
@@ -500,23 +567,29 @@
                   <input type="checkbox" id="drive-auto-upload">
                   <span class="theme-slider"></span>
                 </label>
-                <span style="font-size:0.85rem; color:var(--text-primary); cursor:pointer; user-select:none;" onclick="document.getElementById('drive-auto-upload').click()">Auto-upload on attendance save</span>
+                <span style="font-size:0.85rem; color:var(--text-primary); cursor:pointer; user-select:none;"
+                  onclick="document.getElementById('drive-auto-upload').click()">Auto-upload on attendance save</span>
               </div>
               <div style="flex:1; min-width:240px; display:flex; align-items:center; gap:12px;">
                 <label class="theme-switch" style="margin:0; flex-shrink:0;">
                   <input type="checkbox" id="drive-year-month-folders" checked>
                   <span class="theme-slider"></span>
                 </label>
-                <span style="font-size:0.85rem; color:var(--text-primary); cursor:pointer; user-select:none;" onclick="document.getElementById('drive-year-month-folders').click()">Organize in Year/Month folders</span>
+                <span style="font-size:0.85rem; color:var(--text-primary); cursor:pointer; user-select:none;"
+                  onclick="document.getElementById('drive-year-month-folders').click()">Organize in Year/Month
+                  folders</span>
               </div>
             </div>
 
             <div style="display:flex; gap:12px; margin-top:20px; flex-wrap:wrap;">
-              <button class="btn btn-primary" onclick="saveDriveSettings()" id="save-drive-settings-btn"><i class="fas fa-save" style="margin-right:6px;"></i>Save Settings</button>
-              <button class="btn btn-outline" onclick="testDriveConnection()" id="drive-test-btn" disabled><i class="fas fa-sync" style="margin-right:6px;"></i>Test Connection</button>
+              <button class="btn btn-primary" onclick="saveDriveSettings()" id="save-drive-settings-btn"><i
+                  class="fas fa-save" style="margin-right:6px;"></i>Save Settings</button>
+              <button class="btn btn-outline" onclick="testDriveConnection()" id="drive-test-btn" disabled><i
+                  class="fas fa-sync" style="margin-right:6px;"></i>Test Connection</button>
             </div>
 
-            <div id="drive-sync-info" class="hidden" style="margin-top:20px; padding:12px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg-secondary); font-size:0.8rem; line-height:1.5;">
+            <div id="drive-sync-info" class="hidden"
+              style="margin-top:20px; padding:12px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg-secondary); font-size:0.8rem; line-height:1.5;">
               <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                 <span style="color:var(--text-secondary);">Last Synced File:</span>
                 <span id="drive-last-file" style="font-weight:600;">None</span>
@@ -619,7 +692,8 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="hideModal('member-modal')">Cancel</button>
-        <button class="btn btn-primary" id="member-save-btn" onclick="saveMember()"><i class="fas fa-save"></i> Save Member</button>
+        <button class="btn btn-primary" id="member-save-btn" onclick="saveMember()"><i class="fas fa-save"></i> Save
+          Member</button>
       </div>
     </div>
   </div>
@@ -653,7 +727,8 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" id="detail-export-pdf-btn"><i class="fas fa-file-pdf"></i> Export PDF</button>
-        <button class="btn btn-outline" id="detail-export-excel-btn"><i class="fas fa-file-excel" style="color:var(--success);"></i> Export Excel</button>
+        <button class="btn btn-outline" id="detail-export-excel-btn"><i class="fas fa-file-excel"
+            style="color:var(--success);"></i> Export Excel</button>
         <button class="btn btn-primary" onclick="hideModal('report-detail-modal')">Close</button>
       </div>
     </div>
@@ -684,7 +759,8 @@
           </div>
           <div class="form-group">
             <label>Access Mode</label>
-            <input type="text" id="role-mode" readonly value="viewer" style="background:var(--bg-secondary); cursor:not-allowed; opacity:0.8;">
+            <input type="text" id="role-mode" readonly value="viewer"
+              style="background:var(--bg-secondary); cursor:not-allowed; opacity:0.8;">
           </div>
           <div class="form-group">
             <label>Status <span class="required">*</span></label>
@@ -695,9 +771,12 @@
           </div>
         </form>
       </div>
-      <div class="modal-footer" style="padding-top:16px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+      <div class="modal-footer"
+        style="padding-top:16px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
         <button class="btn btn-outline" onclick="hideModal('role-modal')">Cancel</button>
-        <button class="btn btn-primary" id="save-role-btn" onclick="document.getElementById('role-form').requestSubmit()"><i class="fas fa-save"></i> Save Access</button>
+        <button class="btn btn-primary" id="save-role-btn"
+          onclick="document.getElementById('role-form').requestSubmit()"><i class="fas fa-save"></i> Save
+          Access</button>
       </div>
     </div>
   </div>
@@ -732,4 +811,5 @@
   <script src="app.js"></script>
 
 </body>
+
 </html>
