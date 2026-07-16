@@ -577,7 +577,6 @@ function deleteMember(memberId) {
 
 // ---- Render Members List ----
 function renderMembersList() {
-  const container = $('#members-grid');
   const searchQuery = ($('#member-search')?.value || '').toLowerCase();
   const filterCategory = $('#member-category-filter')?.value || 'all';
 
@@ -599,37 +598,101 @@ function renderMembersList() {
   // Render category chips
   renderMemberChips();
 
-  if (filtered.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state" style="grid-column:1/-1;">
+  // Group filtered members by category
+  const boardMembers = filtered.filter(m => m.category === 'Board Official');
+  const rotaractorMembers = filtered.filter(m => m.category === 'Rotaractor');
+  const otherMembers = filtered.filter(m => m.category === 'Other Rotaractor');
+
+  // Helper to render grid list
+  const renderGridContent = (members, containerId, categoryName) => {
+    const container = $(`#${containerId}`);
+    if (!container) return;
+
+    if (members.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1; padding: 24px;">
+          <p style="color:var(--text-tertiary); font-size:0.85rem;">No ${categoryName.toLowerCase()}s found</p>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = members.map(m => {
+      const avatarClass = m.category === 'Board Official' ? 'board'
+        : m.category === 'Rotaractor' ? 'rotaractor' : 'other';
+      const badgeClass = m.category === 'Board Official' ? 'badge-board'
+        : m.category === 'Rotaractor' ? 'badge-rotaractor' : 'badge-other';
+      const initials = (m.name || 'U').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+
+      return `
+        <div class="member-card">
+          <div class="member-avatar ${avatarClass}">${initials}</div>
+          <div class="member-info">
+            <div class="member-name">${escapeHtml(m.name)}</div>
+            <div class="member-role">${escapeHtml(m.role || 'Member')} <span class="badge ${badgeClass}">${m.category}</span></div>
+            ${m.department || m.year ? `<div class="member-details">${escapeHtml(m.department || '')}${m.department && m.year ? ' · ' : ''}${escapeHtml(m.year || '')}</div>` : ''}
+          </div>
+          <div class="member-actions">
+            <button class="btn-icon" onclick="openEditMemberModal('${m.id}')" title="Edit"><i class="fas fa-pen"></i></button>
+            <button class="btn-icon danger" onclick="deleteMember('${m.id}')" title="Delete"><i class="fas fa-trash-alt"></i></button>
+          </div>
+        </div>`;
+    }).join('');
+  };
+
+  // Render each section
+  renderGridContent(boardMembers, 'board-officials-grid', 'Board Official');
+  renderGridContent(rotaractorMembers, 'rotaractors-grid', 'Rotaractor');
+  renderGridContent(otherMembers, 'other-rotaractors-grid', 'Other Rotaractor');
+
+  // Show/hide sections based on filter and counts
+  const toggleSection = (sectionId, count, category) => {
+    const section = $(`#${sectionId}`);
+    if (!section) return;
+
+    const isVisible = (filterCategory === 'all' || filterCategory === category) && 
+                      (searchQuery ? count > 0 : true);
+                      
+    if (isVisible) {
+      section.classList.remove('hidden');
+    } else {
+      section.classList.add('hidden');
+    }
+  };
+
+  toggleSection('members-board-section', boardMembers.length, 'Board Official');
+  toggleSection('members-rotaractor-section', rotaractorMembers.length, 'Rotaractor');
+  toggleSection('members-other-section', otherMembers.length, 'Other Rotaractor');
+
+  // Update counts on headers
+  const boardCountEl = $('#members-board-count');
+  if (boardCountEl) boardCountEl.textContent = boardMembers.length;
+
+  const rotaractorCountEl = $('#members-rotaractor-count');
+  if (rotaractorCountEl) rotaractorCountEl.textContent = rotaractorMembers.length;
+
+  const otherCountEl = $('#members-other-count');
+  if (otherCountEl) otherCountEl.textContent = otherMembers.length;
+
+  // Manage general empty state
+  const totalCount = boardMembers.length + rotaractorMembers.length + otherMembers.length;
+  const emptyStateEl = $('#members-empty-state');
+  if (totalCount === 0) {
+    if (!emptyStateEl) {
+      const el = document.createElement('div');
+      el.id = 'members-empty-state';
+      el.className = 'empty-state';
+      el.innerHTML = `
         <div class="empty-state-icon"><i class="fas fa-users-slash"></i></div>
         <h3>No members found</h3>
         <p>${searchQuery ? 'Try a different search term' : 'Add your first member to get started'}</p>
-      </div>`;
-    return;
+      `;
+      $('#members-tab').appendChild(el);
+    } else {
+      emptyStateEl.classList.remove('hidden');
+    }
+  } else {
+    if (emptyStateEl) emptyStateEl.classList.add('hidden');
   }
-
-  container.innerHTML = filtered.map(m => {
-    const avatarClass = m.category === 'Board Official' ? 'board'
-      : m.category === 'Rotaractor' ? 'rotaractor' : 'other';
-    const badgeClass = m.category === 'Board Official' ? 'badge-board'
-      : m.category === 'Rotaractor' ? 'badge-rotaractor' : 'badge-other';
-    const initials = (m.name || 'U').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-
-    return `
-      <div class="member-card">
-        <div class="member-avatar ${avatarClass}">${initials}</div>
-        <div class="member-info">
-          <div class="member-name">${escapeHtml(m.name)}</div>
-          <div class="member-role">${escapeHtml(m.role || 'Member')} <span class="badge ${badgeClass}">${m.category}</span></div>
-          ${m.department || m.year ? `<div class="member-details">${escapeHtml(m.department || '')}${m.department && m.year ? ' · ' : ''}${escapeHtml(m.year || '')}</div>` : ''}
-        </div>
-        <div class="member-actions">
-          <button class="btn-icon" onclick="openEditMemberModal('${m.id}')" title="Edit"><i class="fas fa-pen"></i></button>
-          <button class="btn-icon danger" onclick="deleteMember('${m.id}')" title="Delete"><i class="fas fa-trash-alt"></i></button>
-        </div>
-      </div>`;
-  }).join('');
 }
 
 function renderMemberChips() {
@@ -644,6 +707,301 @@ function renderMemberChips() {
     <div class="chip"><i class="fas fa-user"></i> Rotaractors <span class="chip-count">${rotaractorCount}</span></div>
     <div class="chip"><i class="fas fa-user-friends"></i> Others <span class="chip-count">${otherCount}</span></div>
   `;
+}
+
+// ---- Excel Import & Template Feature ----
+let importState = {
+  validMembers: [],
+  duplicateCount: 0,
+  invalidCount: 0,
+  skippedCount: 0,
+  targetCategory: '',
+  startTime: null
+};
+
+function triggerImportExcel(category) {
+  importState.targetCategory = category;
+  
+  let fileInput = $('#member-excel-input');
+  if (!fileInput) {
+    fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.id = 'member-excel-input';
+    fileInput.accept = '.xlsx, .xls';
+    fileInput.style.display = 'none';
+    fileInput.addEventListener('change', handleExcelFileSelect);
+    document.body.appendChild(fileInput);
+  }
+  
+  fileInput.value = '';
+  fileInput.click();
+}
+
+function handleExcelFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const extension = file.name.split('.').pop().toLowerCase();
+  if (extension !== 'xlsx' && extension !== 'xls') {
+    showToast('Invalid file format. Please select an Excel file (.xlsx or .xls)', 'error');
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+      processImportData(rows);
+    } catch (err) {
+      console.error('SheetJS parse failed:', err);
+      showToast('Failed to parse Excel file. Ensure file is not corrupted.', 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function processImportData(rows) {
+  importState.validMembers = [];
+  importState.duplicateCount = 0;
+  importState.invalidCount = 0;
+  importState.skippedCount = 0;
+  importState.startTime = performance.now();
+  
+  const previewRows = [];
+  
+  rows.forEach((row) => {
+    const keys = Object.keys(row);
+    const findValue = (possibleNames) => {
+      const match = keys.find(k => possibleNames.includes(k.trim().toLowerCase()));
+      return match ? String(row[match]).trim() : "";
+    };
+    
+    const fullName = findValue(["full name", "fullname", "name"]);
+    const email = findValue(["email", "e-mail"]);
+    const phone = findValue(["phone", "phone number", "mobile", "tel"]);
+    const role = findValue(["role", "role / position", "position", "designation"]);
+    const dept = findValue(["department", "dept"]);
+    const year = findValue(["year", "academic year"]);
+    
+    if (!fullName) {
+      importState.skippedCount++;
+      const isEmptyRow = !email && !phone && !role && !dept && !year;
+      if (!isEmptyRow) {
+        previewRows.push({
+          name: "[Empty Name]",
+          role: role,
+          dept: dept,
+          year: year,
+          phone: phone,
+          email: email,
+          status: "Missing Name",
+          isValid: false
+        });
+      }
+      return;
+    }
+    
+    let isValid = true;
+    let statusText = "Ready";
+    
+    if (phone) {
+      const isDigits = /^\d+$/.test(phone);
+      if (!isDigits || phone.length !== 10) {
+        isValid = false;
+        statusText = "Invalid Phone";
+      }
+    }
+    
+    if (email && isValid) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        isValid = false;
+        statusText = "Invalid Email";
+      }
+    }
+    
+    const allowedYears = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
+    if (year && isValid) {
+      if (!allowedYears.includes(year)) {
+        isValid = false;
+        statusText = "Invalid Year";
+      }
+    }
+    
+    if (isValid) {
+      const nameDup = APP.members.some(m => m.name && m.name.toLowerCase() === fullName.toLowerCase());
+      const emailDup = email && APP.members.some(m => m.email && m.email.toLowerCase() === email.toLowerCase());
+      
+      if (nameDup || emailDup) {
+        statusText = "Already Exists";
+        importState.duplicateCount++;
+      } else {
+        importState.validMembers.push({
+          name: fullName,
+          email: email,
+          phone: phone,
+          role: role,
+          department: dept,
+          year: year
+        });
+      }
+    } else {
+      importState.invalidCount++;
+    }
+    
+    if (previewRows.length < 100) {
+      previewRows.push({
+        name: fullName,
+        role: role,
+        dept: dept,
+        year: year,
+        phone: phone,
+        email: email,
+        status: statusText,
+        isValid: isValid && statusText === "Ready"
+      });
+    }
+  });
+  
+  $('#import-stat-total').textContent = rows.length;
+  $('#import-stat-valid').textContent = importState.validMembers.length;
+  $('#import-stat-dup').textContent = importState.duplicateCount;
+  $('#import-stat-invalid').textContent = importState.invalidCount;
+  $('#import-stat-skipped').textContent = importState.skippedCount;
+  
+  const tbody = $('#import-preview-table-body');
+  if (previewRows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 20px;">No rows found in Excel sheet.</td></tr>`;
+  } else {
+    tbody.innerHTML = previewRows.map(r => {
+      let statusColor = "var(--success)";
+      if (r.status === "Already Exists") statusColor = "var(--warning)";
+      else if (r.status.startsWith("Invalid") || r.status.startsWith("Missing")) statusColor = "var(--danger)";
+      
+      return `
+        <tr>
+          <td style="padding: 8px;">${escapeHtml(r.name)}</td>
+          <td style="padding: 8px;">${escapeHtml(r.role || "—")}</td>
+          <td style="padding: 8px;">${escapeHtml(r.dept || "—")}</td>
+          <td style="padding: 8px;">${escapeHtml(r.year || "—")}</td>
+          <td style="padding: 8px;">${escapeHtml(r.phone || "—")}</td>
+          <td style="padding: 8px;">${escapeHtml(r.email || "—")}</td>
+          <td style="padding: 8px; text-align: right; font-weight: 600; color: ${statusColor};">${escapeHtml(r.status)}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+  
+  $('#confirm-import-btn').disabled = importState.validMembers.length === 0;
+  $('#import-preview-view').classList.remove('hidden');
+  $('#import-result-view').classList.add('hidden');
+  $('#import-modal-footer').classList.remove('hidden');
+  $('#import-progress-container').classList.add('hidden');
+  $('#import-progress-bar').style.width = '0%';
+  $('#import-progress-percent').textContent = '0%';
+  
+  showModal('import-preview-modal');
+}
+
+async function commitImport() {
+  if (importState.validMembers.length === 0) return;
+  
+  const validList = importState.validMembers;
+  const targetCategory = importState.targetCategory;
+  
+  $('#confirm-import-btn').disabled = true;
+  $('#import-progress-container').classList.remove('hidden');
+  
+  const creator = auth.currentUser ? auth.currentUser.email : "system";
+  const now = firebase.firestore.FieldValue.serverTimestamp();
+  
+  const BATCH_LIMIT = 500;
+  let totalBatches = Math.ceil(validList.length / BATCH_LIMIT);
+  let batchesCommitted = 0;
+  
+  try {
+    for (let i = 0; i < validList.length; i += BATCH_LIMIT) {
+      const batch = db.batch();
+      const chunk = validList.slice(i, i + BATCH_LIMIT);
+      
+      chunk.forEach(m => {
+        const docRef = db.collection('members').doc();
+        const memberData = {
+          name: m.name,
+          category: targetCategory,
+          role: m.role || "",
+          department: m.department || "",
+          year: m.year || "",
+          phone: m.phone || "",
+          email: m.email || "",
+          createdAt: now,
+          updatedAt: now,
+          createdBy: creator,
+          isActive: true,
+          searchName: m.name.toLowerCase()
+        };
+        batch.set(docRef, memberData);
+      });
+      
+      await batch.commit();
+      batchesCommitted++;
+      
+      const percent = Math.round((batchesCommitted / totalBatches) * 100);
+      $('#import-progress-bar').style.width = `${percent}%`;
+      $('#import-progress-percent').textContent = `${percent}%`;
+    }
+    
+    const timeTaken = ((performance.now() - importState.startTime) / 1000).toFixed(2);
+    
+    // Refresh members and all views
+    await fetchMembers();
+    renderDashboard();
+    renderAttendanceLists();
+    renderMembersList();
+    updateSettingsCounts();
+    
+    // Show results inside the preview modal
+    $('#import-preview-view').classList.add('hidden');
+    $('#import-modal-footer').classList.add('hidden');
+    $('#import-result-view').classList.remove('hidden');
+    $('#import-result-text').innerHTML = `
+      <strong>Successfully Imported:</strong> ${validList.length}<br>
+      <strong>Duplicates Skipped:</strong> ${importState.duplicateCount}<br>
+      <strong>Invalid Rows Skipped:</strong> ${importState.invalidCount}<br>
+      <strong>Time Taken:</strong> ${timeTaken} seconds
+    `;
+    
+    showToast(`Successfully imported ${validList.length} members`, "success");
+  } catch (err) {
+    console.error("Firestore batch commit failed:", err);
+    showToast("Import failed: " + err.message, "error");
+    $('#confirm-import-btn').disabled = false;
+    $('#import-progress-container').classList.add('hidden');
+  }
+}
+
+function downloadTemplate(categoryPreset) {
+  try {
+    const headers = [
+      ["Full Name", "Category", "Role / Position", "Department", "Year", "Phone", "Email"],
+      ["John Doe", categoryPreset || "Board Official", "President", "ECE", "4th Year", "9876543210", "john.doe@example.com"]
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(headers);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Member Template");
+
+    const filename = `${(categoryPreset || "Member").replace(/\s+/g, "_")}_Template.xlsx`;
+    XLSX.writeFile(wb, filename);
+    showToast("Template downloaded successfully", "success");
+  } catch (err) {
+    console.error("Template generation failed:", err);
+    showToast("Failed to download template: " + err.message, "error");
+  }
 }
 
 // Members search & filter event listeners
@@ -1749,6 +2107,7 @@ function applyAccessControlRules() {
     $$('#nav-tabs [data-tab="settings"], #mobile-nav [data-tab="settings"]').forEach(el => el.classList.remove('hidden'));
     $('#settings-access-control-card')?.classList.remove('hidden');
     $('#settings-drive-sync-card')?.classList.remove('hidden');
+    $$('.admin-only').forEach(el => el.classList.remove('hidden'));
   } else {
     // Hide Protected Tabs
     $$('#nav-tabs [data-tab="attendance"], #mobile-nav [data-tab="attendance"]').forEach(el => el.classList.add('hidden'));
@@ -1756,6 +2115,7 @@ function applyAccessControlRules() {
     $$('#nav-tabs [data-tab="settings"], #mobile-nav [data-tab="settings"]').forEach(el => el.classList.add('hidden'));
     $('#settings-access-control-card')?.classList.add('hidden');
     $('#settings-drive-sync-card')?.classList.add('hidden');
+    $$('.admin-only').forEach(el => el.classList.add('hidden'));
     
     // Redirect viewer if on a prohibited tab
     if (['attendance', 'members', 'settings'].includes(APP.currentTab)) {

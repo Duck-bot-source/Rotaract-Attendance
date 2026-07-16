@@ -387,8 +387,54 @@
         <!-- Category Chips -->
         <div class="category-chips" id="member-category-chips"></div>
 
-        <!-- Members Grid -->
-        <div class="members-grid" id="members-grid"></div>
+        <!-- Board Officials Section -->
+        <div class="members-section" id="members-board-section">
+          <div class="category-section-header">
+            <h2>
+              <i class="fas fa-user-tie" style="color:var(--primary);"></i>
+              Board Officials
+              <span class="member-count-badge" id="members-board-count">0</span>
+            </h2>
+            <div class="category-section-actions">
+              <button class="btn btn-sm btn-accent" onclick="openAddMemberModal('Board Official')"><i class="fas fa-plus"></i> Add Member</button>
+              <button class="btn btn-sm btn-outline admin-only" onclick="triggerImportExcel('Board Official')"><i class="fas fa-file-import"></i> Import Excel</button>
+              <button class="btn btn-sm btn-ghost admin-only" onclick="downloadTemplate('Board Official')"><i class="fas fa-file-download"></i> Download Template</button>
+            </div>
+          </div>
+          <div class="members-grid" id="board-officials-grid"></div>
+        </div>
+
+        <!-- Rotaractors Section -->
+        <div class="members-section" id="members-rotaractor-section">
+          <div class="category-section-header">
+            <h2>
+              <i class="fas fa-users" style="color:var(--accent);"></i>
+              Rotaractors
+              <span class="member-count-badge" id="members-rotaractor-count">0</span>
+            </h2>
+            <div class="category-section-actions">
+              <button class="btn btn-sm btn-accent" onclick="openAddMemberModal('Rotaractor')"><i class="fas fa-plus"></i> Add Member</button>
+              <button class="btn btn-sm btn-outline admin-only" onclick="triggerImportExcel('Rotaractor')"><i class="fas fa-file-import"></i> Import Excel</button>
+              <button class="btn btn-sm btn-ghost admin-only" onclick="downloadTemplate('Rotaractor')"><i class="fas fa-file-download"></i> Download Template</button>
+            </div>
+          </div>
+          <div class="members-grid" id="rotaractors-grid"></div>
+        </div>
+
+        <!-- Other Rotaractors Section -->
+        <div class="members-section" id="members-other-section">
+          <div class="category-section-header">
+            <h2>
+              <i class="fas fa-user-friends" style="color:#6366F1;"></i>
+              Other Rotaractors
+              <span class="member-count-badge" id="members-other-count">0</span>
+            </h2>
+            <div class="category-section-actions">
+              <button class="btn btn-sm btn-accent" onclick="openAddMemberModal('Other Rotaractor')"><i class="fas fa-plus"></i> Add Member</button>
+            </div>
+          </div>
+          <div class="members-grid" id="other-rotaractors-grid"></div>
+        </div>
       </section>
 
       <!-- ==========================================
@@ -777,6 +823,87 @@
         <button class="btn btn-primary" id="save-role-btn"
           onclick="document.getElementById('role-form').requestSubmit()"><i class="fas fa-save"></i> Save
           Access</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Preview Modal -->
+  <div id="import-preview-modal" class="modal-overlay">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h2 id="import-modal-title">Excel Import Preview</h2>
+        <button class="modal-close" onclick="hideModal('import-preview-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Preview Screen -->
+        <div id="import-preview-view">
+          <div class="import-stats-summary">
+            <div class="import-stat-card">
+              <span style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 500; display: block; margin-bottom: 2px;">Total Rows</span>
+              <span id="import-stat-total" style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);">0</span>
+            </div>
+            <div class="import-stat-card valid">
+              <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 500; display: block; margin-bottom: 2px;">Valid Ready</span>
+              <span id="import-stat-valid" style="font-size: 1.5rem; font-weight: 800;">0</span>
+            </div>
+            <div class="import-stat-card dup">
+              <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 500; display: block; margin-bottom: 2px;">Duplicates</span>
+              <span id="import-stat-dup" style="font-size: 1.5rem; font-weight: 800;">0</span>
+            </div>
+            <div class="import-stat-card invalid">
+              <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 500; display: block; margin-bottom: 2px;">Invalid Rows</span>
+              <span id="import-stat-invalid" style="font-size: 1.5rem; font-weight: 800;">0</span>
+            </div>
+            <div class="import-stat-card">
+              <span style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 500; display: block; margin-bottom: 2px;">Skipped</span>
+              <span id="import-stat-skipped" style="font-size: 1.5rem; font-weight: 800; color: var(--text-secondary);">0</span>
+            </div>
+          </div>
+
+          <div class="progress-bar-container hidden" id="import-progress-container" style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 6px;">
+              <span id="import-progress-label">Importing members...</span>
+              <span id="import-progress-percent">0%</span>
+            </div>
+            <div style="width: 100%; height: 8px; background: var(--bg-secondary); border-radius: var(--radius-full); overflow: hidden;">
+              <div id="import-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-light)); transition: width 0.1s;"></div>
+            </div>
+          </div>
+
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">Sheet data preview (top matches):</p>
+          <div class="table-container" style="max-height: 280px; overflow-y: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+              <thead>
+                <tr style="background: var(--bg-secondary); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1;">
+                  <th style="padding: 10px 8px;">Name</th>
+                  <th style="padding: 10px 8px;">Role</th>
+                  <th style="padding: 10px 8px;">Department</th>
+                  <th style="padding: 10px 8px;">Year</th>
+                  <th style="padding: 10px 8px;">Phone</th>
+                  <th style="padding: 10px 8px;">Email</th>
+                  <th style="padding: 10px 8px; text-align: right;">Status</th>
+                </tr>
+              </thead>
+              <tbody id="import-preview-table-body">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="import-result-view" class="hidden" style="text-align: center; padding: 20px 10px;">
+          <div style="font-size: 3.5rem; color: var(--success); margin-bottom: 16px;"><i class="fas fa-check-circle"></i></div>
+          <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">Import Complete</h3>
+          <div id="import-result-text" style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; text-align: left; max-width: 320px; margin-left: auto; margin-right: auto; background: var(--bg-secondary); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+            <!-- Populated dynamically -->
+          </div>
+          <button class="btn btn-primary" onclick="hideModal('import-preview-modal')" style="width: 100%; max-width: 200px; margin: 0 auto; display: block;">OK</button>
+        </div>
+      </div>
+      <div class="modal-footer" id="import-modal-footer">
+        <button class="btn btn-outline" onclick="hideModal('import-preview-modal')">Cancel</button>
+        <button class="btn btn-primary" id="confirm-import-btn" onclick="commitImport()"><i class="fas fa-file-upload"></i> Import Members</button>
       </div>
     </div>
   </div>
