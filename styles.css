@@ -2352,7 +2352,7 @@ tbody tr:last-child td {
   }
 
   .nav-tabs {
-    HEAD display: flex !important;
+    display: flex !important;
     align-items: center !important;
     gap: 2px !important;
     margin-left: 10px !important;
@@ -2481,7 +2481,6 @@ tbody tr:last-child td {
 
   #main-content {
     margin-bottom: var(--mobile-nav-height);
-    d5d7da40881e60a9b41393bfcc49aa1dcf2072e4
   }
 
   .dashboard-grid {
