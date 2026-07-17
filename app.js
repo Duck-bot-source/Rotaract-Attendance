@@ -188,9 +188,9 @@ function initAuthListener() {
     setTimeout(() => {
       if (preloader) {
         preloader.classList.add('fade-out');
-        setTimeout(() => preloader.remove(), 500);
+        setTimeout(() => preloader.remove(), 800);
       }
-    }, 400);
+    }, 1800);
   });
 
   // Login form

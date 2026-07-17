@@ -320,34 +320,182 @@ textarea {
 #preloader {
   position: fixed;
   inset: 0;
-  background: var(--bg-body);
+  background: radial-gradient(circle at 50% 50%, #202020 0%, #0a0a0a 50%, #020202 100%);
+  background-size: 200% 200%;
+  animation: bgDrift 8s ease infinite alternate;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
-  transition: opacity var(--transition-slow);
+  z-index: 100000;
+  transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 #preloader.fade-out {
   opacity: 0;
+  transform: scale(1.05);
   pointer-events: none;
 }
 
-.preloader-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--border);
-  border-top-color: var(--primary);
+.preloader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  max-width: 90%;
+  width: 500px;
+}
+
+.preloader-logo-wrapper {
+  position: relative;
+  margin-bottom: 24px;
+  animation: logoEntry 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.preloader-logo-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.22) 0%, rgba(212, 175, 55, 0) 70%);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  z-index: -1;
+  animation: logoGlowBreathe 3s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.preloader-logo {
+  height: 120px;
+  width: auto;
+  object-fit: contain;
+}
+
+.preloader-title {
+  font-size: clamp(0.95rem, 4vw, 1.2rem);
+  font-weight: 600;
+  letter-spacing: 4px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin: 0 0 8px 0;
+  opacity: 0;
+  animation: fadeInUp 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.4s forwards;
+  will-change: transform, opacity;
+}
+
+.preloader-subtitle {
+  font-size: clamp(1.2rem, 6vw, 1.85rem);
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, #FFEFA6 0%, #F4D03F 50%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+  text-transform: uppercase;
+  margin: 0 0 32px 0;
+  opacity: 0;
+  animation: fadeInUp 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.6s forwards;
+  will-change: transform, opacity;
+}
+
+.preloader-spinner-bar {
+  width: 180px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: 16px;
+  opacity: 0;
+  animation: fadeIn 0.5s ease 0.8s forwards;
+}
+
+.preloader-spinner-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #F4D03F, #D4AF37);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
+  animation: progressBarGrow 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.9s forwards;
 }
 
 .preloader-text {
-  margin-top: 16px;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
   font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin: 0;
+  opacity: 0;
+  animation: fadeIn 0.5s ease 1s forwards;
+}
+
+/* Splash Keyframes */
+@keyframes logoEntry {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.85);
+    filter: drop-shadow(0 0 0 rgba(212, 175, 55, 0));
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.35));
+  }
+}
+
+@keyframes logoGlowBreathe {
+  0% {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0.55;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.25);
+    opacity: 1;
+  }
+}
+
+@keyframes bgDrift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 50% 100%;
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes progressBarGrow {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
 }
 
 /* ============================================================
