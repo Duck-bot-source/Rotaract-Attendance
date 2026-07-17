@@ -2939,6 +2939,17 @@ tbody tr:last-child td {
   color: var(--accent-light);
 }
 
+/* Ensure native date and time inputs match dark theme colors on mobile/desktop */
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="time"] {
+  color-scheme: dark !important;
+}
+
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) !important;
+}
+
 /* Custom Premium Gold Cursors (Universal) */
 @media (pointer: fine) {
   /* Set the yellow sharp cursor for EVERYTHING all the time */
