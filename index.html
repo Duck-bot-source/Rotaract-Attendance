@@ -57,6 +57,9 @@
         <button type="submit" class="login-btn" id="login-btn">
           <span class="login-btn-text">Sign In</span>
         </button>
+        <button type="button" class="btn btn-outline" id="login-cancel-btn" style="width:100%; margin-top:10px; border:1px solid var(--border); background:transparent; padding:12px; color:var(--text-primary); font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+          <i class="fas fa-arrow-left"></i> Cancel (Back to Dashboard)
+        </button>
       </form>
       <p class="login-error" id="login-error"></p>
     </div>
@@ -127,6 +130,9 @@
       </div>
 
       <div class="nav-actions">
+        <button class="btn btn-primary" id="admin-access-btn" style="padding: 6px 12px; font-size: 0.8rem; height: 36px; display: inline-flex; align-items: center; gap: 6px;">
+          <i class="fas fa-user-shield"></i> Admin Access
+        </button>
         <span class="nav-admin-badge" id="user-role-badge" style="display:inline-flex; align-items:center; gap:6px;">
           <i class="fas fa-user-shield" id="user-role-icon"></i>
           <span id="user-role-display">Role</span>
