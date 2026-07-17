@@ -30,6 +30,8 @@ const APP = {
   attendance: {},       // { memberId: { status, reason, remarks } }
   currentTab: 'dashboard',
   editingMemberId: null,
+  editingSessionId: null, // Track currently edited attendance session
+  removedMemberIds: new Set(), // Track member IDs excluded from the current session
   currentReportSession: null,
   confirmCallback: null,
   userRole: null,       // Loaded role for the current logged-in user
@@ -157,11 +159,14 @@ function initAuthListener() {
         await auth.signOut();
       }
     } else {
-      // User is signed out
-      $('#login-screen').classList.remove('hidden');
-      $('#app').classList.add('hidden');
-      $('#blocked-screen').classList.add('hidden');
+      // User is signed out -> default to VIEWER MODE
       APP.userRole = null;
+      applyAccessControlRules();
+      $('#login-screen').classList.add('hidden');
+      $('#blocked-screen').classList.add('hidden');
+      $('#app').classList.remove('hidden');
+      switchTab('dashboard');
+      await loadAppData();
     }
     
     // Hide preloader
@@ -177,6 +182,22 @@ function initAuthListener() {
   $('#login-form').addEventListener('submit', handleLogin);
   // Logout button
   $('#logout-btn').addEventListener('click', handleLogout);
+
+  // Admin Access button trigger
+  $('#admin-access-btn')?.addEventListener('click', () => {
+    $('#login-screen').classList.remove('hidden');
+    $('#login-error').textContent = '';
+    $('#login-email').value = '';
+    $('#login-password').value = '';
+    setTimeout(() => $('#login-email')?.focus(), 100);
+  });
+
+  // Login Cancel button trigger
+  $('#login-cancel-btn')?.addEventListener('click', () => {
+    $('#login-screen').classList.add('hidden');
+    $('#app').classList.remove('hidden');
+    switchTab('dashboard');
+  });
 }
 
 async function handleLogin(e) {
@@ -1019,6 +1040,70 @@ document.addEventListener('DOMContentLoaded', () => {
 // ATTENDANCE MODULE
 // ============================================================
 
+function getAttendanceMembers() {
+  let baseMembers = [...APP.members];
+  
+  if (APP.editingSessionId) {
+    const session = APP.sessions.find(s => s.id === APP.editingSessionId);
+    if (session) {
+      const merged = [];
+      const seenIds = new Set();
+      
+      // First, add all records from the saved session
+      (session.records || []).forEach(r => {
+        merged.push({
+          id: r.memberId,
+          name: r.memberName,
+          category: r.category,
+          role: r.role || ''
+        });
+        seenIds.add(r.memberId);
+      });
+      
+      // Then, add any current member from APP.members who isn't in the saved session records
+      APP.members.forEach(m => {
+        if (!seenIds.has(m.id)) {
+          merged.push(m);
+        }
+      });
+      
+      baseMembers = merged;
+    }
+  }
+  
+  // Filter out any members that have been removed during this session edit
+  if (APP.removedMemberIds) {
+    baseMembers = baseMembers.filter(m => !APP.removedMemberIds.has(m.id));
+  }
+  
+  return baseMembers;
+}
+
+function removeMemberFromSession(memberId) {
+  let name = 'Member';
+  const member = APP.members.find(m => m.id === memberId);
+  if (member) {
+    name = member.name;
+  } else if (APP.editingSessionId) {
+    const session = APP.sessions.find(s => s.id === APP.editingSessionId);
+    const rec = session?.records?.find(r => r.memberId === memberId);
+    if (rec) name = rec.memberName;
+  }
+
+  showConfirm(
+    'Remove Member',
+    `Are you sure you want to remove "${name}" from this attendance session?`,
+    () => {
+      APP.removedMemberIds.add(memberId);
+      if (APP.attendance[memberId]) {
+        delete APP.attendance[memberId];
+      }
+      renderAttendanceLists();
+      showToast(`"${name}" removed from this session.`, 'info');
+    }
+  );
+}
+
 function renderAttendanceLists() {
   const searchQuery = ($('#attendance-search')?.value || '').toLowerCase();
 
@@ -1026,7 +1111,7 @@ function renderAttendanceLists() {
     const section = $(sectionSel);
     if (!section) return 0;
 
-    let members = getMembersByCategory(category);
+    let members = getAttendanceMembers().filter(m => m.category === category);
 
     if (searchQuery) {
       members = members.filter(m =>
@@ -1082,6 +1167,9 @@ function renderAttendanceLists() {
             </button>
             <button class="status-btn ${lateActive}" onclick="markAttendance('${m.id}', 'Late')" title="Late">
               <i class="fas fa-clock"></i> L
+            </button>
+            <button class="status-btn" onclick="removeMemberFromSession('${m.id}')" title="Remove Member" style="color:var(--danger); border-color:transparent; background:transparent; padding:6px 8px; min-width:unset;">
+              <i class="fas fa-trash-alt"></i>
             </button>
           </div>
         </div>
@@ -1154,7 +1242,7 @@ function updateReason(memberId, reason) {
 }
 
 function markAllStatus(category, status) {
-  const members = getMembersByCategory(category);
+  const members = getAttendanceMembers().filter(m => m.category === category);
   members.forEach(m => {
     if (!APP.attendance[m.id]) APP.attendance[m.id] = {};
     APP.attendance[m.id].status = status;
@@ -1165,7 +1253,7 @@ function markAllStatus(category, status) {
 }
 
 function clearCategoryAttendance(category) {
-  const members = getMembersByCategory(category);
+  const members = getAttendanceMembers().filter(m => m.category === category);
   members.forEach(m => {
     delete APP.attendance[m.id];
   });
@@ -1176,6 +1264,22 @@ function clearCategoryAttendance(category) {
 function clearAllAttendance() {
   showConfirm('Clear All Attendance?', 'This will reset all attendance marks for this session.', () => {
     APP.attendance = {};
+    if (APP.editingSessionId) {
+      APP.editingSessionId = null;
+      APP.removedMemberIds = new Set();
+      // Clear form inputs
+      $('#event-name').value = '';
+      if ($('#attendance-service')) $('#attendance-service').value = '';
+      if ($('#attendance-service-custom')) $('#attendance-service-custom').value = '';
+      if ($('#custom-service-wrapper')) $('#custom-service-wrapper').classList.add('hidden');
+      if ($('#attendance-venue')) $('#attendance-venue').value = '';
+      setDefaultDate();
+      
+      const heading = $('#attendance-tab h1');
+      if (heading) heading.textContent = 'Take Attendance';
+      const saveBtn = $('#save-attendance-btn');
+      if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Attendance';
+    }
     renderAttendanceLists();
     showToast('All attendance cleared.', 'info');
   });
@@ -1183,7 +1287,8 @@ function clearAllAttendance() {
 
 function updateAttendanceCounts() {
   let present = 0, absent = 0, late = 0, unmarked = 0;
-  APP.members.forEach(m => {
+  const membersList = getAttendanceMembers();
+  membersList.forEach(m => {
     const att = APP.attendance[m.id];
     if (!att || !att.status) unmarked++;
     else if (att.status === 'Present') present++;
@@ -1266,11 +1371,13 @@ async function saveAttendance() {
 async function doSaveAttendance(date, eventTime, eventName, serviceType, venue) {
   const btn = $('#save-attendance-btn');
   btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+  btn.innerHTML = APP.editingSessionId
+    ? '<i class="fas fa-spinner fa-spin"></i> Updating...'
+    : '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
   try {
-    // Build records
-    const records = APP.members.map(m => {
+    // Build records using getAttendanceMembers() to include/exclude members dynamically
+    const records = getAttendanceMembers().map(m => {
       const att = APP.attendance[m.id] || {};
       return {
         memberId: m.id,
@@ -1295,8 +1402,6 @@ async function doSaveAttendance(date, eventTime, eventName, serviceType, venue) 
       eventTime,
       serviceType: serviceType || '',
       venue: venue || '',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      createdBy: auth.currentUser?.email || 'unknown',
       totalMembers,
       totalPresent,
       totalAbsent,
@@ -1305,10 +1410,25 @@ async function doSaveAttendance(date, eventTime, eventName, serviceType, venue) 
       records
     };
 
-    const docRef = await db.collection('sessions').add(sessionData);
-    const sessionId = docRef.id;
+    let sessionId;
+    if (APP.editingSessionId) {
+      sessionId = APP.editingSessionId;
+      sessionData.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+      sessionData.updatedBy = auth.currentUser?.email || 'unknown';
+      
+      await db.collection('sessions').doc(sessionId).update(sessionData);
+      showToast(`Attendance updated for "${eventName}".`, 'success');
+    } else {
+      sessionData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      sessionData.createdBy = auth.currentUser?.email || 'unknown';
+      
+      const docRef = await db.collection('sessions').add(sessionData);
+      sessionId = docRef.id;
+      showToast(`Attendance saved for "${eventName}".`, 'success');
+    }
 
-    showToast(`Attendance saved for "${eventName}".`, 'success');
+    // Refresh sessions first so that APP.sessions contains the saved/updated session
+    await fetchSessions();
 
     // Trigger auto-upload to Google Drive if enabled and authenticated
     if (APP.driveSettings && APP.driveSettings.driveConnected && APP.driveSettings.autoUpload) {
@@ -1317,7 +1437,17 @@ async function doSaveAttendance(date, eventTime, eventName, serviceType, venue) 
       });
     }
 
-    // Reset
+    // Reset Edit Mode
+    APP.editingSessionId = null;
+    APP.removedMemberIds = new Set();
+
+    // Reset headings and buttons
+    const heading = $('#attendance-tab h1');
+    if (heading) heading.textContent = 'Take Attendance';
+    const saveBtn = $('#save-attendance-btn');
+    if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Attendance';
+
+    // Reset form fields
     APP.attendance = {};
     $('#event-name').value = '';
     if ($('#attendance-service')) $('#attendance-service').value = '';
@@ -1326,8 +1456,7 @@ async function doSaveAttendance(date, eventTime, eventName, serviceType, venue) 
     if ($('#attendance-venue')) $('#attendance-venue').value = '';
     setDefaultDate();
 
-    // Refresh
-    await fetchSessions();
+    // Refresh UI components
     renderAttendanceLists();
     renderReportsList();
     renderDashboard();
@@ -1341,7 +1470,9 @@ async function doSaveAttendance(date, eventTime, eventName, serviceType, venue) 
     showToast('Failed to save attendance. Please try again.', 'error');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-save"></i> Save Attendance';
+    btn.innerHTML = APP.editingSessionId
+      ? '<i class="fas fa-save"></i> Update Attendance'
+      : '<i class="fas fa-save"></i> Save Attendance';
   }
 }
 
@@ -1423,6 +1554,9 @@ function renderReportsList() {
           <div class="bar-fill ${barClass}" style="width:${rate}%;"></div>
         </div>
         <div class="report-actions" onclick="event.stopPropagation();">
+          ${APP.userRole && APP.userRole.accessMode === 'admin' ? `
+            <button class="btn-icon" onclick="startEditSession('${s.id}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+          ` : ''}
           <button class="btn-icon" onclick="exportSessionPDF('${s.id}')" title="Export PDF"><i class="fas fa-file-pdf"></i></button>
           <button class="btn-icon" onclick="exportSessionExcel('${s.id}')" title="Export Excel"><i class="fas fa-file-excel"></i></button>
           ${s.uploadStatus === 'Synced' && s.fileUrl ? `
@@ -1587,6 +1721,64 @@ function showReportDetail(sessionId) {
   $('#detail-export-excel-btn').onclick = () => exportSessionExcel(sessionId);
 
   showModal('report-detail-modal');
+}
+
+function startEditSession(sessionId) {
+  if (!APP.userRole || APP.userRole.accessMode !== 'admin') {
+    showToast('Permission Denied: Only Admins can edit sessions.', 'error');
+    return;
+  }
+  
+  const session = APP.sessions.find(s => s.id === sessionId);
+  if (!session) {
+    showToast('Session not found.', 'error');
+    return;
+  }
+
+  APP.editingSessionId = sessionId;
+  APP.removedMemberIds = new Set();
+
+  // Populate Event details
+  $('#event-name').value = session.eventName || '';
+  $('#attendance-date').value = session.date || '';
+  $('#attendance-time').value = session.eventTime || '';
+  $('#attendance-venue').value = session.venue || '';
+
+  const serviceSelect = $('#attendance-service');
+  if (serviceSelect) {
+    const knownAvenues = ['Club Service', 'Professional Service', 'International Service', 'Community Service', 'Blood Donation', 'Empowerment'];
+    if (knownAvenues.includes(session.serviceType)) {
+      serviceSelect.value = session.serviceType;
+      $('#custom-service-wrapper')?.classList.add('hidden');
+      if ($('#attendance-service-custom')) $('#attendance-service-custom').value = '';
+    } else {
+      serviceSelect.value = 'Other';
+      $('#custom-service-wrapper')?.classList.remove('hidden');
+      if ($('#attendance-service-custom')) $('#attendance-service-custom').value = session.serviceType || '';
+    }
+  }
+
+  // Load saved attendance statuses
+  APP.attendance = {};
+  (session.records || []).forEach(r => {
+    APP.attendance[r.memberId] = {
+      status: r.status,
+      reason: r.reason || '',
+      remarks: r.remarks || ''
+    };
+  });
+
+  // Update header title and save button text
+  const heading = $('#attendance-tab h1');
+  if (heading) heading.textContent = 'Edit Attendance';
+  const saveBtn = $('#save-attendance-btn');
+  if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> Update Attendance';
+
+  // Render lists and counts
+  renderAttendanceLists();
+
+  // Switch to the Attendance tab
+  switchTab('attendance');
 }
 
 function deleteSession(sessionId) {
@@ -2164,6 +2356,11 @@ function applyAccessControlRules() {
     $('#settings-access-control-card')?.classList.remove('hidden');
     $('#settings-drive-sync-card')?.classList.remove('hidden');
     $$('.admin-only').forEach(el => el.classList.remove('hidden'));
+    
+    // Toggle header actions
+    $('#admin-access-btn')?.classList.add('hidden');
+    $('#user-role-badge')?.classList.remove('hidden');
+    $('#logout-btn')?.classList.remove('hidden');
   } else {
     // Hide Protected Tabs
     $$('#nav-tabs [data-tab="attendance"], #mobile-nav [data-tab="attendance"]').forEach(el => el.classList.add('hidden'));
@@ -2172,6 +2369,11 @@ function applyAccessControlRules() {
     $('#settings-access-control-card')?.classList.add('hidden');
     $('#settings-drive-sync-card')?.classList.add('hidden');
     $$('.admin-only').forEach(el => el.classList.add('hidden'));
+    
+    // Toggle header actions
+    $('#admin-access-btn')?.classList.remove('hidden');
+    $('#user-role-badge')?.classList.add('hidden');
+    $('#logout-btn')?.classList.add('hidden');
     
     // Redirect viewer if on a prohibited tab
     if (['attendance', 'members', 'settings'].includes(APP.currentTab)) {
@@ -2889,8 +3091,18 @@ async function uploadSessionPDFToDrive(sessionId) {
     const safeName = (session.eventName || 'Report').replace(/[^a-zA-Z0-9]/g, '_');
     const filename = `${safeName}_${session.date || 'undated'}.pdf`;
     
-    // Execute Multipart File Upload
-    const uploadResult = await sendPDFToGoogleDrive(blob, filename, targetFolderId);
+    // Execute Multipart File Upload (use existing fileId if available)
+    let uploadResult;
+    try {
+      uploadResult = await sendPDFToGoogleDrive(blob, filename, targetFolderId, session.fileId);
+    } catch (err) {
+      if (session.fileId && (err.message.includes('404') || err.message.includes('not found') || err.message.includes('403') || err.message.includes('Upload Failed (404)') || err.message.includes('Upload Failed (403)'))) {
+        console.warn('Existing file not found or inaccessible in Drive. Creating a new one...');
+        uploadResult = await sendPDFToGoogleDrive(blob, filename, targetFolderId, null);
+      } else {
+        throw err;
+      }
+    }
     
     const fileId = uploadResult.id;
     const fileUrl = uploadResult.webViewLink;
@@ -2957,24 +3169,28 @@ async function uploadSessionPDFToDrive(sessionId) {
   }
 }
 
-async function sendPDFToGoogleDrive(pdfBlob, filename, parentFolderId) {
+async function sendPDFToGoogleDrive(pdfBlob, filename, parentFolderId, fileId = null) {
   const accessToken = await ensureValidAccessToken();
   
   // Multipart body composition
   const metadata = {
     name: filename,
-    mimeType: 'application/pdf',
-    parents: [parentFolderId]
+    mimeType: 'application/pdf'
   };
+  if (!fileId) {
+    metadata.parents = [parentFolderId];
+  }
   
   const formData = new FormData();
   formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
   formData.append('file', pdfBlob);
   
-  const uploadUrl = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink';
+  const uploadUrl = fileId
+    ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart&fields=id,webViewLink`
+    : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink';
   
   const res = await fetch(uploadUrl, {
-    method: 'POST',
+    method: fileId ? 'PATCH' : 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`
     },
