@@ -114,44 +114,59 @@ function initAuthListener() {
       try {
         const roleData = await checkUserRole(user);
         if (roleData) {
-          APP.userRole = roleData;
-          
-          // Render badge
-          const roleDisplay = $('#user-role-display');
-          const roleIcon = $('#user-role-icon');
-          const roleBadge = $('#user-role-badge');
-          
-          if (roleDisplay) roleDisplay.textContent = `${roleData.clubPosition}`;
-          if (roleBadge) {
-            if (roleData.accessMode === 'admin') {
-              roleBadge.style.background = 'var(--accent-bg)';
-              roleBadge.style.color = 'var(--accent-dark)';
-              roleBadge.style.border = '1px solid var(--accent)';
-              if (roleIcon) roleIcon.className = 'fas fa-user-shield';
-            } else {
-              roleBadge.style.background = 'rgba(100, 100, 100, 0.08)';
-              roleBadge.style.color = 'var(--text-secondary)';
-              roleBadge.style.border = '1px solid var(--border)';
-              if (roleIcon) roleIcon.className = 'fas fa-user-tie';
+          if (roleData.active === false) {
+            // Explicitly Deactivated
+            $('#login-screen').classList.add('hidden');
+            $('#app').classList.add('hidden');
+            $('#blocked-screen').classList.remove('hidden');
+            $('#blocked-user-email').textContent = user.email;
+          } else {
+            APP.userRole = roleData;
+            
+            // Render badge
+            const roleDisplay = $('#user-role-display');
+            const roleIcon = $('#user-role-icon');
+            const roleBadge = $('#user-role-badge');
+            
+            if (roleDisplay) {
+              roleDisplay.textContent = roleData.accessMode === 'admin'
+                ? (roleData.clubPosition || 'Admin')
+                : 'Viewer';
             }
+            
+            if (roleBadge) {
+              if (roleData.accessMode === 'admin') {
+                roleBadge.style.background = 'var(--accent-bg)';
+                roleBadge.style.color = 'var(--accent-dark)';
+                roleBadge.style.border = '1px solid var(--accent)';
+                if (roleIcon) roleIcon.className = 'fas fa-user-shield';
+              } else {
+                roleBadge.style.background = 'rgba(100, 100, 100, 0.08)';
+                roleBadge.style.color = 'var(--text-secondary)';
+                roleBadge.style.border = '1px solid var(--border)';
+                if (roleIcon) roleIcon.className = 'fas fa-user-tie';
+              }
+            }
+
+            // Enforce navigation views
+            applyAccessControlRules();
+
+            // Transition screen
+            $('#login-screen').classList.add('hidden');
+            $('#blocked-screen').classList.add('hidden');
+            $('#app').classList.remove('hidden');
+            $('#settings-admin-email').textContent = user.email;
+            
+            await loadAppData();
           }
-
-          // Enforce navigation views
+        } else {
+          // Fallback guest viewer mode
+          APP.userRole = null;
           applyAccessControlRules();
-
-          // Transition screen
           $('#login-screen').classList.add('hidden');
           $('#blocked-screen').classList.add('hidden');
           $('#app').classList.remove('hidden');
-          $('#settings-admin-email').textContent = user.email;
-          
           await loadAppData();
-        } else {
-          // Unassigned or Inactive
-          $('#login-screen').classList.add('hidden');
-          $('#app').classList.add('hidden');
-          $('#blocked-screen').classList.remove('hidden');
-          $('#blocked-user-email').textContent = user.email;
         }
       } catch (err) {
         console.error('Error verifying user role:', err);
@@ -2366,13 +2381,12 @@ async function checkUserRole(user) {
   const docSnap = await docRef.get();
   
   if (!docSnap.exists) {
-    return null;
+    return { accessMode: 'viewer', active: true, guest: true };
   }
   
   const roleData = docSnap.data();
-  // Check active status
-  if (!roleData || !roleData.active) {
-    return null;
+  if (!roleData) {
+    return { accessMode: 'viewer', active: true, guest: true };
   }
   
   return roleData;
@@ -2404,9 +2418,15 @@ function applyAccessControlRules() {
     $$('.admin-only').forEach(el => el.classList.add('hidden'));
     
     // Toggle header actions
-    $('#admin-access-btn')?.classList.remove('hidden');
-    $('#user-role-badge')?.classList.add('hidden');
-    $('#logout-btn')?.classList.add('hidden');
+    if (auth.currentUser) {
+      $('#admin-access-btn')?.classList.add('hidden');
+      $('#user-role-badge')?.classList.remove('hidden');
+      $('#logout-btn')?.classList.remove('hidden');
+    } else {
+      $('#admin-access-btn')?.classList.remove('hidden');
+      $('#user-role-badge')?.classList.add('hidden');
+      $('#logout-btn')?.classList.add('hidden');
+    }
     
     // Redirect viewer if on a prohibited tab
     if (['attendance', 'members', 'settings'].includes(APP.currentTab)) {
