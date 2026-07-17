@@ -314,9 +314,10 @@ textarea {
   margin-top: 24px;
 }
 
-/* ============================================================
-   PRELOADER
-   ============================================================ */
+.skip-preloader #preloader {
+  display: none !important;
+}
+
 #preloader {
   position: fixed;
   inset: 0;

@@ -185,12 +185,20 @@ function initAuthListener() {
     }
 
     // Hide preloader
+    const hasSeenIntro = sessionStorage.getItem('hasSeenIntro') === 'true';
+    const dismissDelay = hasSeenIntro ? 0 : 1800;
+
     setTimeout(() => {
       if (preloader) {
-        preloader.classList.add('fade-out');
-        setTimeout(() => preloader.remove(), 800);
+        if (hasSeenIntro) {
+          preloader.remove();
+        } else {
+          preloader.classList.add('fade-out');
+          setTimeout(() => preloader.remove(), 800);
+          sessionStorage.setItem('hasSeenIntro', 'true');
+        }
       }
-    }, 1800);
+    }, dismissDelay);
   });
 
   // Login form

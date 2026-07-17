@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=1.0.5">
+  <link rel="stylesheet" href="styles.css?v=1.0.6">
 
 
   <!-- Favicon -->
@@ -24,6 +24,11 @@
 </head>
 
 <body>
+  <script>
+    if (sessionStorage.getItem('hasSeenIntro') === 'true') {
+      document.body.classList.add('skip-preloader');
+    }
+  </script>
 
   <!-- ============================================================
        PRELOADER
@@ -972,7 +977,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- 5. Main App Logic -->
-  <script src="app.js?v=1.0.5"></script>
+  <script src="app.js?v=1.0.6"></script>
 
 </body>
 
