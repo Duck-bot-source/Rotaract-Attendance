@@ -1976,57 +1976,76 @@ function renderLeaderboard() {
   const container = $('#dashboard-leaderboard-list');
   if (!container) return;
 
-  const totalSessions = APP.sessions.length;
+  try {
+    const totalSessions = APP.sessions.length;
+    const validMembers = APP.members.filter(m => m && m.id && m.name);
 
-  if (totalSessions === 0 || APP.members.length === 0) {
+    if (totalSessions === 0 || validMembers.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state" style="padding:24px 0;">
+          <div class="empty-state-icon"><i class="fas fa-trophy"></i></div>
+          <h3>No records yet</h3>
+          <p>Save attendance to see active members leaderboard</p>
+        </div>`;
+      return;
+    }
+
+    // Calculate attendance rate for each member
+    const membersStats = validMembers.map(member => {
+      const presentCount = APP.sessions.filter(s => {
+        if (!s) return false;
+        const records = Array.isArray(s.records) ? s.records : [];
+        const rec = records.find(r => r && r.memberId === member.id);
+        return rec && (rec.status === 'Present' || rec.status === 'Late');
+      }).length;
+
+      const percentage = Math.round((presentCount / totalSessions) * 100);
+      return {
+        name: String(member.name || ''),
+        role: String(member.role || 'Member'),
+        percentage: percentage
+      };
+    });
+
+    // Sort by percentage desc, then alphabetically by name
+    membersStats.sort((a, b) => {
+      if (b.percentage !== a.percentage) {
+        return b.percentage - a.percentage;
+      }
+      const nameA = a.name || '';
+      const nameB = b.name || '';
+      return nameA.localeCompare(nameB);
+    });
+
+    // Take top 5
+    const top5 = membersStats.slice(0, 5);
+
+    container.innerHTML = top5.map((m, idx) => {
+      const rank = idx + 1;
+      let rankClass = 'normal-rank';
+      if (rank === 1) rankClass = 'top-1';
+      else if (rank === 2) rankClass = 'top-2';
+      else if (rank === 3) rankClass = 'top-3';
+
+      return `
+        <div class="leaderboard-row">
+          <div class="leaderboard-rank ${rankClass}">${rank}</div>
+          <div class="leaderboard-info">
+            <div class="leaderboard-name">${escapeHtml(m.name)}</div>
+            <div class="leaderboard-role">${escapeHtml(m.role)}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Error rendering leaderboard:', err);
     container.innerHTML = `
       <div class="empty-state" style="padding:24px 0;">
-        <div class="empty-state-icon"><i class="fas fa-trophy"></i></div>
-        <h3>No records yet</h3>
-        <p>Save attendance to see active members leaderboard</p>
+        <div class="empty-state-icon" style="color:var(--danger);"><i class="fas fa-exclamation-triangle"></i></div>
+        <h3>Failed to load leaderboard</h3>
+        <p>A database discrepancy was encountered.</p>
       </div>`;
-    return;
   }
-
-  // Calculate attendance rate for each member
-  const membersStats = APP.members.map(member => {
-    const presentCount = APP.sessions.filter(s => {
-      const rec = (s.records || []).find(r => r.memberId === member.id);
-      return rec && (rec.status === 'Present' || rec.status === 'Late');
-    }).length;
-
-    const percentage = Math.round((presentCount / totalSessions) * 100);
-    return {
-      name: member.name,
-      percentage: percentage
-    };
-  });
-
-  // Sort by percentage desc, then alphabetically by name
-  membersStats.sort((a, b) => {
-    if (b.percentage !== a.percentage) {
-      return b.percentage - a.percentage;
-    }
-    return a.name.localeCompare(b.name);
-  });
-
-  // Take top 5
-  const top5 = membersStats.slice(0, 5);
-
-  container.innerHTML = top5.map((m, idx) => {
-    const rank = idx + 1;
-    let rankClass = 'normal-rank';
-    if (rank === 1) rankClass = 'top-1';
-    else if (rank === 2) rankClass = 'top-2';
-    else if (rank === 3) rankClass = 'top-3';
-
-    return `
-      <div class="leaderboard-row">
-        <div class="leaderboard-rank ${rankClass}">${rank}</div>
-        <div class="leaderboard-name">${escapeHtml(m.name)}</div>
-      </div>
-    `;
-  }).join('');
 }
 
 // ============================================================
@@ -2386,6 +2405,12 @@ function animateCounter(el, target, suffix = '', prefix = '') {
 
   const elementId = el.id || el.className || el.tagName;
 
+  // Cancel any existing animation on this element to prevent race conditions
+  if (el._animationFrameId) {
+    cancelAnimationFrame(el._animationFrameId);
+    el._animationFrameId = null;
+  }
+
   // If this element has already been animated in this session, skip and set target value immediately
   if (elementId && ANIMATED_COUNTERS.has(elementId)) {
     el.textContent = prefix + target + suffix;
@@ -2416,12 +2441,13 @@ function animateCounter(el, target, suffix = '', prefix = '') {
       el.textContent = prefix + `${currentValue}/${secondNum}` + suffix;
 
       if (progress < 1) {
-        window.requestAnimationFrame(step);
+        el._animationFrameId = window.requestAnimationFrame(step);
       } else {
         el.textContent = prefix + target + suffix;
+        el._animationFrameId = null;
       }
     };
-    window.requestAnimationFrame(step);
+    el._animationFrameId = window.requestAnimationFrame(step);
     return;
   }
 
@@ -2441,13 +2467,14 @@ function animateCounter(el, target, suffix = '', prefix = '') {
     el.textContent = prefix + currentValue + suffix;
 
     if (progress < 1) {
-      window.requestAnimationFrame(step);
+      el._animationFrameId = window.requestAnimationFrame(step);
     } else {
       el.textContent = prefix + target + suffix;
+      el._animationFrameId = null;
     }
   };
 
-  window.requestAnimationFrame(step);
+  el._animationFrameId = window.requestAnimationFrame(step);
 }
 
 // ============================================================
