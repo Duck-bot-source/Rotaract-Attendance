@@ -246,23 +246,56 @@ async function handleLogout() {
 // ============================================================
 // DATA LOADING
 // ============================================================
+let membersUnsubscribe = null;
+let sessionsUnsubscribe = null;
+
 async function loadAppData() {
   try {
-    const promises = [fetchMembers(), fetchSessions()];
+    const promises = [];
+    
+    // Set up real-time listener for members
+    if (membersUnsubscribe) membersUnsubscribe();
+    const membersPromise = new Promise((resolve) => {
+      membersUnsubscribe = db.collection('members')
+        .orderBy('name')
+        .onSnapshot((snapshot) => {
+          APP.members = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          renderMembersList();
+          renderAttendanceLists();
+          renderDashboard();
+          resolve();
+        }, (err) => {
+          console.error('Real-time members listener error:', err);
+          resolve();
+        });
+    });
+    promises.push(membersPromise);
+
+    // Set up real-time listener for sessions
+    if (sessionsUnsubscribe) sessionsUnsubscribe();
+    const sessionsPromise = new Promise((resolve) => {
+      sessionsUnsubscribe = db.collection('sessions')
+        .orderBy('date', 'desc')
+        .onSnapshot((snapshot) => {
+          APP.sessions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          renderReportsList();
+          renderDashboard();
+          updateSettingsCounts();
+          resolve();
+        }, (err) => {
+          console.error('Real-time sessions listener error:', err);
+          resolve();
+        });
+    });
+    promises.push(sessionsPromise);
+
+    // Admin-only data fetches
     if (APP.userRole && APP.userRole.accessMode === 'admin') {
-      promises.push(fetchUserRoles());
-      promises.push(fetchDriveSettings());
+      promises.push(fetchUserRoles().then(() => renderUserRoles()));
+      promises.push(fetchDriveSettings().then(() => initGoogleClient()));
     }
+
     await Promise.all(promises);
-    renderDashboard();
-    renderAttendanceLists();
-    renderMembersList();
-    renderReportsList();
-    updateSettingsCounts();
-    if (APP.userRole && APP.userRole.accessMode === 'admin') {
-      renderUserRoles();
-      initGoogleClient();
-    }
   } catch (err) {
     console.error('Error loading data:', err);
     showToast('Failed to load data. Check your connection.', 'error');
