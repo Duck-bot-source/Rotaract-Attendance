@@ -2906,27 +2906,33 @@ tbody tr:last-child td {
 }
 
 .leaderboard-name {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-primary);
-  flex-grow: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-right: 16px;
+  line-height: 1.2;
 }
 
-.leaderboard-pct {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--accent-dark);
-  text-align: right;
-  flex-shrink: 0;
+.leaderboard-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0;
+  gap: 2px;
 }
 
-[data-theme="dark"] .leaderboard-pct {
-  color: var(--accent);
+.leaderboard-role {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
 }
+
 
 [data-theme="dark"] .leaderboard-rank.top-2,
 [data-theme="dark"] .leaderboard-rank.top-3 {
