@@ -37,7 +37,7 @@ const APP = {
   userRole: null,       // Loaded role for the current logged-in user
   userRoles: [],        // List of all user roles for admin display
   editingUserRoleEmail: null,
-  
+
   // Google Drive state
   googleAccessToken: null,
   googleTokenExpiry: null,
@@ -122,18 +122,18 @@ function initAuthListener() {
             $('#blocked-user-email').textContent = user.email;
           } else {
             APP.userRole = roleData;
-            
+
             // Render badge
             const roleDisplay = $('#user-role-display');
             const roleIcon = $('#user-role-icon');
             const roleBadge = $('#user-role-badge');
-            
+
             if (roleDisplay) {
               roleDisplay.textContent = roleData.accessMode === 'admin'
                 ? (roleData.clubPosition || 'Admin')
                 : 'Viewer';
             }
-            
+
             if (roleBadge) {
               if (roleData.accessMode === 'admin') {
                 roleBadge.style.background = 'var(--accent-bg)';
@@ -156,7 +156,7 @@ function initAuthListener() {
             $('#blocked-screen').classList.add('hidden');
             $('#app').classList.remove('hidden');
             $('#settings-admin-email').textContent = user.email;
-            
+
             await loadAppData();
           }
         } else {
@@ -183,7 +183,7 @@ function initAuthListener() {
       switchTab('dashboard');
       await loadAppData();
     }
-    
+
     // Hide preloader
     setTimeout(() => {
       if (preloader) {
@@ -267,7 +267,7 @@ let sessionsUnsubscribe = null;
 async function loadAppData() {
   try {
     const promises = [];
-    
+
     // Set up real-time listener for members
     if (membersUnsubscribe) membersUnsubscribe();
     const membersPromise = new Promise((resolve) => {
@@ -341,7 +341,7 @@ async function fetchSessions() {
 // THEME
 // ============================================================
 function initTheme() {
-  const saved = localStorage.getItem('rotaract-theme') || 'light';
+  const saved = localStorage.getItem('rotaract-theme') || 'dark';
   applyTheme(saved);
 
   $('#theme-toggle-btn').addEventListener('click', () => {
@@ -718,9 +718,9 @@ function renderMembersList() {
     const section = $(`#${sectionId}`);
     if (!section) return;
 
-    const isVisible = (filterCategory === 'all' || filterCategory === category) && 
-                      (searchQuery ? count > 0 : true);
-                      
+    const isVisible = (filterCategory === 'all' || filterCategory === category) &&
+      (searchQuery ? count > 0 : true);
+
     if (isVisible) {
       section.classList.remove('hidden');
     } else {
@@ -734,13 +734,13 @@ function renderMembersList() {
 
   // Update counts on headers
   const boardCountEl = $('#members-board-count');
-  if (boardCountEl) boardCountEl.textContent = boardMembers.length;
+  if (boardCountEl) animateCounter(boardCountEl, boardMembers.length);
 
   const rotaractorCountEl = $('#members-rotaractor-count');
-  if (rotaractorCountEl) rotaractorCountEl.textContent = rotaractorMembers.length;
+  if (rotaractorCountEl) animateCounter(rotaractorCountEl, rotaractorMembers.length);
 
   const otherCountEl = $('#members-other-count');
-  if (otherCountEl) otherCountEl.textContent = otherMembers.length;
+  if (otherCountEl) animateCounter(otherCountEl, otherMembers.length);
 
   // Manage general empty state
   const totalCount = boardMembers.length + rotaractorMembers.length + otherMembers.length;
@@ -790,7 +790,7 @@ let importState = {
 
 function triggerImportExcel(category) {
   importState.targetCategory = category;
-  
+
   let fileInput = $('#member-excel-input');
   if (!fileInput) {
     fileInput = document.createElement('input');
@@ -801,7 +801,7 @@ function triggerImportExcel(category) {
     fileInput.addEventListener('change', handleExcelFileSelect);
     document.body.appendChild(fileInput);
   }
-  
+
   fileInput.value = '';
   fileInput.click();
 }
@@ -809,15 +809,15 @@ function triggerImportExcel(category) {
 function handleExcelFileSelect(event) {
   const file = event.target.files[0];
   if (!file) return;
-  
+
   const extension = file.name.split('.').pop().toLowerCase();
   if (extension !== 'xlsx' && extension !== 'xls') {
     showToast('Invalid file format. Please select an Excel file (.xlsx or .xls)', 'error');
     return;
   }
-  
+
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = function (e) {
     try {
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
@@ -839,23 +839,23 @@ function processImportData(rows) {
   importState.invalidCount = 0;
   importState.skippedCount = 0;
   importState.startTime = performance.now();
-  
+
   const previewRows = [];
-  
+
   rows.forEach((row) => {
     const keys = Object.keys(row);
     const findValue = (possibleNames) => {
       const match = keys.find(k => possibleNames.includes(k.trim().toLowerCase()));
       return match ? String(row[match]).trim() : "";
     };
-    
+
     const fullName = findValue(["full name", "fullname", "name"]);
     const email = findValue(["email", "e-mail"]);
     const phone = findValue(["phone", "phone number", "mobile", "tel"]);
     const role = findValue(["role", "role / position", "position", "designation"]);
     const dept = findValue(["department", "dept"]);
     const year = findValue(["year", "academic year"]);
-    
+
     if (!fullName) {
       importState.skippedCount++;
       const isEmptyRow = !email && !phone && !role && !dept && !year;
@@ -873,10 +873,10 @@ function processImportData(rows) {
       }
       return;
     }
-    
+
     let isValid = true;
     let statusText = "Ready";
-    
+
     if (phone) {
       const isDigits = /^\d+$/.test(phone);
       if (!isDigits || phone.length !== 10) {
@@ -884,7 +884,7 @@ function processImportData(rows) {
         statusText = "Invalid Phone";
       }
     }
-    
+
     if (email && isValid) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
@@ -892,7 +892,7 @@ function processImportData(rows) {
         statusText = "Invalid Email";
       }
     }
-    
+
     const allowedYears = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
     if (year && isValid) {
       if (!allowedYears.includes(year)) {
@@ -900,11 +900,11 @@ function processImportData(rows) {
         statusText = "Invalid Year";
       }
     }
-    
+
     if (isValid) {
       const nameDup = APP.members.some(m => m.name && m.name.toLowerCase() === fullName.toLowerCase());
       const emailDup = email && APP.members.some(m => m.email && m.email.toLowerCase() === email.toLowerCase());
-      
+
       if (nameDup || emailDup) {
         statusText = "Already Exists";
         importState.duplicateCount++;
@@ -921,7 +921,7 @@ function processImportData(rows) {
     } else {
       importState.invalidCount++;
     }
-    
+
     if (previewRows.length < 100) {
       previewRows.push({
         name: fullName,
@@ -935,13 +935,13 @@ function processImportData(rows) {
       });
     }
   });
-  
+
   $('#import-stat-total').textContent = rows.length;
   $('#import-stat-valid').textContent = importState.validMembers.length;
   $('#import-stat-dup').textContent = importState.duplicateCount;
   $('#import-stat-invalid').textContent = importState.invalidCount;
   $('#import-stat-skipped').textContent = importState.skippedCount;
-  
+
   const tbody = $('#import-preview-table-body');
   if (previewRows.length === 0) {
     tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 20px;">No rows found in Excel sheet.</td></tr>`;
@@ -950,7 +950,7 @@ function processImportData(rows) {
       let statusColor = "var(--success)";
       if (r.status === "Already Exists") statusColor = "var(--warning)";
       else if (r.status.startsWith("Invalid") || r.status.startsWith("Missing")) statusColor = "var(--danger)";
-      
+
       return `
         <tr>
           <td style="padding: 8px;">${escapeHtml(r.name)}</td>
@@ -964,7 +964,7 @@ function processImportData(rows) {
       `;
     }).join('');
   }
-  
+
   $('#confirm-import-btn').disabled = importState.validMembers.length === 0;
   $('#import-preview-view').classList.remove('hidden');
   $('#import-result-view').classList.add('hidden');
@@ -972,31 +972,31 @@ function processImportData(rows) {
   $('#import-progress-container').classList.add('hidden');
   $('#import-progress-bar').style.width = '0%';
   $('#import-progress-percent').textContent = '0%';
-  
+
   showModal('import-preview-modal');
 }
 
 async function commitImport() {
   if (importState.validMembers.length === 0) return;
-  
+
   const validList = importState.validMembers;
   const targetCategory = importState.targetCategory;
-  
+
   $('#confirm-import-btn').disabled = true;
   $('#import-progress-container').classList.remove('hidden');
-  
+
   const creator = auth.currentUser ? auth.currentUser.email : "system";
   const now = firebase.firestore.FieldValue.serverTimestamp();
-  
+
   const BATCH_LIMIT = 500;
   let totalBatches = Math.ceil(validList.length / BATCH_LIMIT);
   let batchesCommitted = 0;
-  
+
   try {
     for (let i = 0; i < validList.length; i += BATCH_LIMIT) {
       const batch = db.batch();
       const chunk = validList.slice(i, i + BATCH_LIMIT);
-      
+
       chunk.forEach(m => {
         const docRef = db.collection('members').doc();
         const memberData = {
@@ -1015,24 +1015,24 @@ async function commitImport() {
         };
         batch.set(docRef, memberData);
       });
-      
+
       await batch.commit();
       batchesCommitted++;
-      
+
       const percent = Math.round((batchesCommitted / totalBatches) * 100);
       $('#import-progress-bar').style.width = `${percent}%`;
       $('#import-progress-percent').textContent = `${percent}%`;
     }
-    
+
     const timeTaken = ((performance.now() - importState.startTime) / 1000).toFixed(2);
-    
+
     // Refresh members and all views
     await fetchMembers();
     renderDashboard();
     renderAttendanceLists();
     renderMembersList();
     updateSettingsCounts();
-    
+
     // Show results inside the preview modal
     $('#import-preview-view').classList.add('hidden');
     $('#import-modal-footer').classList.add('hidden');
@@ -1043,7 +1043,7 @@ async function commitImport() {
       <strong>Invalid Rows Skipped:</strong> ${importState.invalidCount}<br>
       <strong>Time Taken:</strong> ${timeTaken} seconds
     `;
-    
+
     showToast(`Successfully imported ${validList.length} members`, "success");
   } catch (err) {
     console.error("Firestore batch commit failed:", err);
@@ -1090,13 +1090,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function getAttendanceMembers() {
   let baseMembers = [...APP.members];
-  
+
   if (APP.editingSessionId) {
     const session = APP.sessions.find(s => s.id === APP.editingSessionId);
     if (session) {
       const merged = [];
       const seenIds = new Set();
-      
+
       // First, add all records from the saved session
       (session.records || []).forEach(r => {
         merged.push({
@@ -1107,23 +1107,23 @@ function getAttendanceMembers() {
         });
         seenIds.add(r.memberId);
       });
-      
+
       // Then, add any current member from APP.members who isn't in the saved session records
       APP.members.forEach(m => {
         if (!seenIds.has(m.id)) {
           merged.push(m);
         }
       });
-      
+
       baseMembers = merged;
     }
   }
-  
+
   // Filter out any members that have been removed during this session edit
   if (APP.removedMemberIds) {
     baseMembers = baseMembers.filter(m => !APP.removedMemberIds.has(m.id));
   }
-  
+
   return baseMembers;
 }
 
@@ -1322,7 +1322,7 @@ function clearAllAttendance() {
       if ($('#custom-service-wrapper')) $('#custom-service-wrapper').classList.add('hidden');
       if ($('#attendance-venue')) $('#attendance-venue').value = '';
       setDefaultDate();
-      
+
       const heading = $('#attendance-tab h1');
       if (heading) heading.textContent = 'Take Attendance';
       const saveBtn = $('#save-attendance-btn');
@@ -1463,13 +1463,13 @@ async function doSaveAttendance(date, eventTime, eventName, serviceType, venue) 
       sessionId = APP.editingSessionId;
       sessionData.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
       sessionData.updatedBy = auth.currentUser?.email || 'unknown';
-      
+
       await db.collection('sessions').doc(sessionId).update(sessionData);
       showToast(`Attendance updated for "${eventName}".`, 'success');
     } else {
       sessionData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       sessionData.createdBy = auth.currentUser?.email || 'unknown';
-      
+
       const docRef = await db.collection('sessions').add(sessionData);
       sessionId = docRef.id;
       showToast(`Attendance saved for "${eventName}".`, 'success');
@@ -1553,7 +1553,7 @@ function renderReportsList() {
 
   // Update count
   const countEl = $('#report-session-count');
-  if (countEl) countEl.textContent = filtered.length;
+  if (countEl) animateCounter(countEl, filtered.length);
 
   if (filtered.length === 0) {
     container.innerHTML = `
@@ -1582,12 +1582,12 @@ function renderReportsList() {
           <div class="report-event-name" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
             ${escapeHtml(s.eventName || 'Untitled Event')}
             ${(() => {
-              const status = s.uploadStatus || '';
-              if (status === 'Synced') return `<span class="badge badge-sync-success" style="font-size:0.65rem; text-transform:none;"><i class="fas fa-check-circle" style="margin-right: 3px;"></i>Synced</span>`;
-              if (status === 'Syncing') return `<span class="badge badge-syncing" style="font-size:0.65rem; text-transform:none;"><i class="fas fa-spinner fa-spin" style="margin-right: 3px;"></i>Syncing...</span>`;
-              if (status === 'Failed') return `<span class="badge badge-sync-failed" style="font-size:0.65rem; text-transform:none;"><i class="fas fa-exclamation-triangle" style="margin-right: 3px;"></i>Sync Failed</span>`;
-              return `<span class="badge badge-unsynced" style="font-size:0.65rem; text-transform:none;"><i class="fas fa-cloud" style="margin-right: 3px;"></i>Unsynced</span>`;
-            })()}
+        const status = s.uploadStatus || '';
+        if (status === 'Synced') return `<span class="badge badge-sync-success" style="font-size:0.65rem; text-transform:none;"><i class="fas fa-check-circle" style="margin-right: 3px;"></i>Synced</span>`;
+        if (status === 'Syncing') return `<span class="badge badge-syncing" style="font-size:0.65rem; text-transform:none;"><i class="fas fa-spinner fa-spin" style="margin-right: 3px;"></i>Syncing...</span>`;
+        if (status === 'Failed') return `<span class="badge badge-sync-failed" style="font-size:0.65rem; text-transform:none;"><i class="fas fa-exclamation-triangle" style="margin-right: 3px;"></i>Sync Failed</span>`;
+        return `<span class="badge badge-unsynced" style="font-size:0.65rem; text-transform:none;"><i class="fas fa-cloud" style="margin-right: 3px;"></i>Unsynced</span>`;
+      })()}
           </div>
           <div class="report-meta">
             ${s.serviceType ? `<span><i class="fas fa-hands-helping"></i> ${escapeHtml(s.serviceType)}</span>` : ''}
@@ -1647,12 +1647,12 @@ function showReportDetail(sessionId) {
       <p style="margin:4px 0; font-size:1rem; color:var(--text-primary);"><strong>Date:</strong> ${session.date || 'N/A'}</p>
       <p style="margin:4px 0; font-size:1rem; color:var(--text-primary);"><strong>Time:</strong> ${formatTime12Hour(session.eventTime)}</p>
       <p style="margin:4px 0; font-size:1rem; color:var(--text-primary); display:flex; align-items:center; gap:8px;"><strong>Drive Sync:</strong> ${(() => {
-        const status = session.uploadStatus || '';
-        if (status === 'Synced') return `<span class="badge badge-sync-success" style="font-size:0.75rem; text-transform:none;"><i class="fas fa-check-circle" style="margin-right: 3px;"></i>Synced to Drive</span>`;
-        if (status === 'Syncing') return `<span class="badge badge-syncing" style="font-size:0.75rem; text-transform:none;"><i class="fas fa-spinner fa-spin" style="margin-right: 3px;"></i>Syncing...</span>`;
-        if (status === 'Failed') return `<span class="badge badge-sync-failed" style="font-size:0.75rem; text-transform:none;"><i class="fas fa-exclamation-triangle" style="margin-right: 3px;"></i>Sync Failed</span>`;
-        return `<span class="badge badge-unsynced" style="font-size:0.75rem; text-transform:none;"><i class="fas fa-cloud" style="margin-right: 3px;"></i>Not Synced</span>`;
-      })()}</p>
+      const status = session.uploadStatus || '';
+      if (status === 'Synced') return `<span class="badge badge-sync-success" style="font-size:0.75rem; text-transform:none;"><i class="fas fa-check-circle" style="margin-right: 3px;"></i>Synced to Drive</span>`;
+      if (status === 'Syncing') return `<span class="badge badge-syncing" style="font-size:0.75rem; text-transform:none;"><i class="fas fa-spinner fa-spin" style="margin-right: 3px;"></i>Syncing...</span>`;
+      if (status === 'Failed') return `<span class="badge badge-sync-failed" style="font-size:0.75rem; text-transform:none;"><i class="fas fa-exclamation-triangle" style="margin-right: 3px;"></i>Sync Failed</span>`;
+      return `<span class="badge badge-unsynced" style="font-size:0.75rem; text-transform:none;"><i class="fas fa-cloud" style="margin-right: 3px;"></i>Not Synced</span>`;
+    })()}</p>
     </div>
 
     <div class="report-summary-cards" style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom: 20px;">
@@ -1713,15 +1713,15 @@ function showReportDetail(sessionId) {
           </thead>
           <tbody>
             ${absentRecords.length > 0 ? absentRecords.map((r, i) => {
-              const badgeClass = r.status === 'Absent' ? 'badge-absent' : 'badge-late';
-              return `
+      const badgeClass = r.status === 'Absent' ? 'badge-absent' : 'badge-late';
+      return `
               <tr>
                 <td>${i + 1}</td>
                 <td>${escapeHtml(r.memberName)}</td>
                 <td><span class="badge ${badgeClass}">${r.status}</span></td>
                 <td style="color:var(--text-primary); font-style:italic;">${escapeHtml(r.reason || 'No reason provided')}</td>
               </tr>`;
-            }).join('') : '<tr><td colspan="4" class="text-center" style="padding:20px;">No absentees or late members.</td></tr>'}
+    }).join('') : '<tr><td colspan="4" class="text-center" style="padding:20px;">No absentees or late members.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -1776,7 +1776,7 @@ function startEditSession(sessionId) {
     showToast('Permission Denied: Only Admins can edit sessions.', 'error');
     return;
   }
-  
+
   const session = APP.sessions.find(s => s.id === sessionId);
   if (!session) {
     showToast('Session not found.', 'error');
@@ -1894,14 +1894,17 @@ function renderDashboard() {
 
   animateCounter($('#dash-total-members'), totalMembers);
   animateCounter($('#dash-total-sessions'), totalSessions);
-  $('#dash-avg-attendance').textContent = `${avgAttendance}%`;
-  $('#dash-present-today').textContent = presentToday;
+  animateCounter($('#dash-avg-attendance'), avgAttendance, '%');
+  animateCounter($('#dash-present-today'), presentToday);
 
   // Recent Sessions
   renderRecentSessions();
 
   // Category Breakdown
   renderCategoryBreakdown();
+
+  // Leaderboard
+  renderLeaderboard();
 }
 
 function renderRecentSessions() {
@@ -1946,23 +1949,84 @@ function renderCategoryBreakdown() {
       <div class="category-bar-track">
         <div class="category-bar-fill blue" style="width:${(boardCount / total) * 100}%;"></div>
       </div>
-      <span class="category-bar-count">${boardCount}</span>
+      <span class="category-bar-count" id="dash-breakdown-board">0</span>
     </div>
     <div class="category-bar-item">
       <span class="category-bar-label">Rotaractors</span>
       <div class="category-bar-track">
         <div class="category-bar-fill gold" style="width:${(rotaractorCount / total) * 100}%;"></div>
       </div>
-      <span class="category-bar-count">${rotaractorCount}</span>
+      <span class="category-bar-count" id="dash-breakdown-rotaractor">0</span>
     </div>
     <div class="category-bar-item">
       <span class="category-bar-label">Other Rotaractors</span>
       <div class="category-bar-track">
         <div class="category-bar-fill purple" style="width:${(otherCount / total) * 100}%;"></div>
       </div>
-      <span class="category-bar-count">${otherCount}</span>
+      <span class="category-bar-count" id="dash-breakdown-other">0</span>
     </div>
   `;
+
+  animateCounter($('#dash-breakdown-board'), boardCount);
+  animateCounter($('#dash-breakdown-rotaractor'), rotaractorCount);
+  animateCounter($('#dash-breakdown-other'), otherCount);
+}
+
+function renderLeaderboard() {
+  const container = $('#dashboard-leaderboard-list');
+  if (!container) return;
+
+  const totalSessions = APP.sessions.length;
+
+  if (totalSessions === 0 || APP.members.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" style="padding:24px 0;">
+        <div class="empty-state-icon"><i class="fas fa-trophy"></i></div>
+        <h3>No records yet</h3>
+        <p>Save attendance to see active members leaderboard</p>
+      </div>`;
+    return;
+  }
+
+  // Calculate attendance rate for each member
+  const membersStats = APP.members.map(member => {
+    const presentCount = APP.sessions.filter(s => {
+      const rec = (s.records || []).find(r => r.memberId === member.id);
+      return rec && (rec.status === 'Present' || rec.status === 'Late');
+    }).length;
+
+    const percentage = Math.round((presentCount / totalSessions) * 100);
+    return {
+      name: member.name,
+      percentage: percentage
+    };
+  });
+
+  // Sort by percentage desc, then alphabetically by name
+  membersStats.sort((a, b) => {
+    if (b.percentage !== a.percentage) {
+      return b.percentage - a.percentage;
+    }
+    return a.name.localeCompare(b.name);
+  });
+
+  // Take top 5
+  const top5 = membersStats.slice(0, 5);
+
+  container.innerHTML = top5.map((m, idx) => {
+    const rank = idx + 1;
+    let rankClass = 'normal-rank';
+    if (rank === 1) rankClass = 'top-1';
+    else if (rank === 2) rankClass = 'top-2';
+    else if (rank === 3) rankClass = 'top-3';
+
+    return `
+      <div class="leaderboard-row">
+        <div class="leaderboard-rank ${rankClass}">${rank}</div>
+        <div class="leaderboard-name">${escapeHtml(m.name)}</div>
+      </div>
+    `;
+  }).join('');
 }
 
 // ============================================================
@@ -1981,7 +2045,7 @@ function exportSessionPDF(sessionId, download = true) {
   const venue = (session.venue || '').trim();
   const date = (session.date || '').trim();
   const time = (session.eventTime || '').trim();
-  
+
   const attendees = (session.records || [])
     .filter(r => r.status === 'Present' || r.status === 'Late')
     .sort((a, b) => (a.memberName || '').localeCompare(b.memberName || ''));
@@ -2188,7 +2252,7 @@ function exportSessionPDF(sessionId, download = true) {
     }
 
     const filename = `ROTARACT_PSVPEC_${(session.serviceType || 'Attendance').replace(/[^a-zA-Z0-9]/g, '_')}_${session.eventName?.replace(/[^a-zA-Z0-9]/g, '_') || 'Report'}_${session.date || 'undated'}.pdf`;
-    
+
     if (download) {
       doc.save(filename);
       showToast('PDF exported successfully!', 'success');
@@ -2315,25 +2379,75 @@ function debounce(fn, delay) {
   };
 }
 
-function animateCounter(el, target) {
+const ANIMATED_COUNTERS = new Set();
+
+function animateCounter(el, target, suffix = '', prefix = '') {
   if (!el) return;
-  const current = parseInt(el.textContent) || 0;
-  if (current === target) return;
 
-  const duration = 600;
-  const steps = 30;
-  const increment = (target - current) / steps;
-  let step = 0;
+  const elementId = el.id || el.className || el.tagName;
 
-  const timer = setInterval(() => {
-    step++;
-    const value = Math.round(current + increment * step);
-    el.textContent = value;
-    if (step >= steps) {
-      el.textContent = target;
-      clearInterval(timer);
+  // If this element has already been animated in this session, skip and set target value immediately
+  if (elementId && ANIMATED_COUNTERS.has(elementId)) {
+    el.textContent = prefix + target + suffix;
+    return;
+  }
+
+  if (elementId) {
+    ANIMATED_COUNTERS.add(elementId);
+  }
+
+  // Handle fractions like "68/92"
+  if (typeof target === 'string' && target.includes('/')) {
+    const parts = target.split('/');
+    const firstNum = parseInt(parts[0]) || 0;
+    const secondNum = parseInt(parts[1]) || 0;
+
+    const start = 0;
+    const duration = 1000;
+    let startTime = null;
+    const easeOutQuad = (t) => t * (2 - t);
+
+    const step = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const easedProgress = easeOutQuad(progress);
+      const currentValue = Math.floor(start + (firstNum - start) * easedProgress);
+
+      el.textContent = prefix + `${currentValue}/${secondNum}` + suffix;
+
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      } else {
+        el.textContent = prefix + target + suffix;
+      }
+    };
+    window.requestAnimationFrame(step);
+    return;
+  }
+
+  const targetNum = parseInt(target) || 0;
+  const start = 0;
+  const duration = 1000; // 1 second
+  let startTime = null;
+
+  const easeOutQuad = (t) => t * (2 - t);
+
+  const step = (timestamp) => {
+    if (!startTime) startTime = timestamp;
+    const progress = Math.min((timestamp - startTime) / duration, 1);
+    const easedProgress = easeOutQuad(progress);
+    const currentValue = Math.floor(start + (targetNum - start) * easedProgress);
+
+    el.textContent = prefix + currentValue + suffix;
+
+    if (progress < 1) {
+      window.requestAnimationFrame(step);
+    } else {
+      el.textContent = prefix + target + suffix;
     }
-  }, duration / steps);
+  };
+
+  window.requestAnimationFrame(step);
 }
 
 // ============================================================
@@ -2342,7 +2456,7 @@ function animateCounter(el, target) {
 
 async function checkUserRole(user) {
   const userEmail = user.email.toLowerCase();
-  
+
   // Guarantee instant master admin access to prevent lockouts
   if (userEmail === 'durkeshwaran14@gmail.com') {
     // Attempt to register/verify in Firestore asynchronously in the background
@@ -2365,7 +2479,7 @@ async function checkUserRole(user) {
     } catch (e) {
       console.warn('Background master admin registration skipped:', e);
     }
-    
+
     return {
       uid: user.uid,
       email: userEmail,
@@ -2379,22 +2493,22 @@ async function checkUserRole(user) {
   // Regular users
   const docRef = db.collection('userRoles').doc(userEmail);
   const docSnap = await docRef.get();
-  
+
   if (!docSnap.exists) {
     return { accessMode: 'viewer', active: true, guest: true };
   }
-  
+
   const roleData = docSnap.data();
   if (!roleData) {
     return { accessMode: 'viewer', active: true, guest: true };
   }
-  
+
   return roleData;
 }
 
 function applyAccessControlRules() {
   const mode = APP.userRole ? APP.userRole.accessMode : 'viewer';
-  
+
   if (mode === 'admin') {
     // Show Admin Tabs
     $$('#nav-tabs [data-tab="attendance"], #mobile-nav [data-tab="attendance"]').forEach(el => el.classList.remove('hidden'));
@@ -2403,7 +2517,7 @@ function applyAccessControlRules() {
     $('#settings-access-control-card')?.classList.remove('hidden');
     $('#settings-drive-sync-card')?.classList.remove('hidden');
     $$('.admin-only').forEach(el => el.classList.remove('hidden'));
-    
+
     // Toggle header actions
     $('#admin-access-btn')?.classList.add('hidden');
     $('#user-role-badge')?.classList.remove('hidden');
@@ -2416,7 +2530,7 @@ function applyAccessControlRules() {
     $('#settings-access-control-card')?.classList.add('hidden');
     $('#settings-drive-sync-card')?.classList.add('hidden');
     $$('.admin-only').forEach(el => el.classList.add('hidden'));
-    
+
     // Toggle header actions
     if (auth.currentUser) {
       $('#admin-access-btn')?.classList.add('hidden');
@@ -2427,7 +2541,7 @@ function applyAccessControlRules() {
       $('#user-role-badge')?.classList.add('hidden');
       $('#logout-btn')?.classList.add('hidden');
     }
-    
+
     // Redirect viewer if on a prohibited tab
     if (['attendance', 'members', 'settings'].includes(APP.currentTab)) {
       switchTab('dashboard');
@@ -2479,7 +2593,7 @@ function renderUserRoles() {
     const statusText = u.active ? 'Active' : 'Inactive';
     const statusClass = u.active ? 'badge-present' : 'badge-absent';
     const modeClass = u.accessMode === 'admin' ? 'badge-board' : 'badge-other';
-    
+
     // Disable operations on own self to prevent accidental self-deletion or lockout
     const isSelf = auth.currentUser && auth.currentUser.email.toLowerCase() === u.email.toLowerCase();
     const actionButtons = isSelf ? `
@@ -2536,7 +2650,7 @@ function autoAssignAccessMode() {
   const pos = $('#role-position').value;
   const modeInput = $('#role-mode');
   if (!modeInput) return;
-  
+
   if (pos === 'Sergeant') {
     modeInput.value = 'admin';
   } else {
@@ -2546,7 +2660,7 @@ function autoAssignAccessMode() {
 
 async function saveUserRole(event) {
   event.preventDefault();
-  
+
   if (!APP.userRole || APP.userRole.accessMode !== 'admin') {
     showToast('Permission Denied', 'error');
     return;
@@ -2568,7 +2682,7 @@ async function saveUserRole(event) {
 
   try {
     const docRef = db.collection('userRoles').doc(email);
-    
+
     if (APP.editingUserRoleEmail) {
       // Edit mode
       await docRef.update({
@@ -2587,7 +2701,7 @@ async function saveUserRole(event) {
         btn.innerHTML = '<i class="fas fa-save"></i> Save Access';
         return;
       }
-      
+
       const newRole = {
         email,
         uid: '', // Linked on first login
@@ -2599,7 +2713,7 @@ async function saveUserRole(event) {
         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
         createdBy: auth.currentUser?.email || 'unknown'
       };
-      
+
       await docRef.set(newRole);
       showToast('New access role added.', 'success');
     }
@@ -2673,7 +2787,7 @@ async function fetchDriveSettings() {
   try {
     const doc = await db.collection('settings').doc('googleDrive').get();
     const dbData = doc.exists ? doc.data() : {};
-    
+
     // Merge database configurations with static appConfig parameters
     APP.driveSettings = {
       driveConnected: dbData.driveConnected || false,
@@ -2686,7 +2800,7 @@ async function fetchDriveSettings() {
       lastUpload: dbData.lastUpload || '',
       lastUploadStatus: dbData.lastUploadStatus || ''
     };
-    
+
     populateDriveSettingsUI();
   } catch (err) {
     console.error('Error fetching Google Drive settings:', err);
@@ -2695,17 +2809,17 @@ async function fetchDriveSettings() {
 
 function populateDriveSettingsUI() {
   if (!APP.driveSettings) return;
-  
+
   const nameInput = $('#drive-folder-name');
   const idFolderInput = $('#drive-folder-id');
   const autoCheckbox = $('#drive-auto-upload');
   const subfolderCheckbox = $('#drive-year-month-folders');
-  
+
   if (nameInput) nameInput.value = APP.driveSettings.driveFolderName || 'Rotaract_Attendance';
   if (idFolderInput) idFolderInput.value = APP.driveSettings.driveFolderId || '';
   if (autoCheckbox) autoCheckbox.checked = APP.driveSettings.autoUpload || false;
   if (subfolderCheckbox) subfolderCheckbox.checked = APP.driveSettings.organizeYearMonth !== false;
-  
+
   // Set origin URL dynamically
   const originDisplay = $('#origin-url-display');
   if (originDisplay) originDisplay.textContent = window.location.origin;
@@ -2720,9 +2834,9 @@ function updateLastSyncUI() {
   const fileEl = $('#drive-last-file');
   const timeEl = $('#drive-last-time');
   const statusEl = $('#drive-last-status');
-  
+
   if (!infoContainer) return;
-  
+
   if (APP.driveSettings.lastSync) {
     infoContainer.classList.remove('hidden');
     if (fileEl) fileEl.textContent = APP.driveSettings.lastUpload || 'N/A';
@@ -2748,11 +2862,11 @@ async function saveDriveSettings() {
   const idVal = $('#drive-folder-id')?.value.trim() || '';
   const autoVal = $('#drive-auto-upload')?.checked || false;
   const subfolderVal = $('#drive-year-month-folders')?.checked || false;
-  
+
   const btn = $('#save-drive-settings-btn');
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-  
+
   try {
     const updateData = {
       driveFolderName: nameVal,
@@ -2760,7 +2874,7 @@ async function saveDriveSettings() {
       autoUpload: autoVal,
       organizeYearMonth: subfolderVal
     };
-    
+
     await db.collection('settings').doc('googleDrive').set(updateData, { merge: true });
     Object.assign(APP.driveSettings, updateData);
     showToast('Google Drive sync settings updated.', 'success');
@@ -2778,17 +2892,17 @@ function updateDriveStatusUI(status, message = '') {
   const connectBtn = $('#drive-connect-btn');
   const disconnectBtn = $('#drive-disconnect-btn');
   const spinner = $('#drive-status-spinner');
-  
+
   if (!badge) return;
-  
+
   if (spinner) spinner.style.display = 'none';
-  
+
   if (status === 'connected') {
     badge.className = 'badge badge-present';
     badge.textContent = 'Connected';
     if (connectBtn) connectBtn.classList.add('hidden');
     if (disconnectBtn) disconnectBtn.classList.remove('hidden');
-    
+
     const chooseBtn = $('#drive-choose-folder-btn');
     const testBtn = $('#drive-test-btn');
     if (chooseBtn) chooseBtn.disabled = false;
@@ -2798,7 +2912,7 @@ function updateDriveStatusUI(status, message = '') {
     badge.textContent = message || 'Not Connected';
     if (connectBtn) connectBtn.classList.remove('hidden');
     if (disconnectBtn) disconnectBtn.classList.add('hidden');
-    
+
     const chooseBtn = $('#drive-choose-folder-btn');
     const testBtn = $('#drive-test-btn');
     if (chooseBtn) chooseBtn.disabled = true;
@@ -2814,7 +2928,7 @@ function initGoogleClient() {
     updateDriveStatusUI('disconnected', 'Client ID not set');
     return;
   }
-  
+
   try {
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: clientId,
@@ -2826,21 +2940,21 @@ function initGoogleClient() {
           updateDriveStatusUI('disconnected', 'Auth failed');
           return;
         }
-        
+
         APP.googleAccessToken = response.access_token;
         APP.googleTokenExpiry = Date.now() + (response.expires_in * 1000);
-        
+
         APP.driveSettings.driveConnected = true;
         await db.collection('settings').doc('googleDrive').set({ driveConnected: true }, { merge: true });
         updateDriveStatusUI('connected');
         showToast('Google Account authorized successfully!', 'success');
-        
+
         // Auto-bootstrap base folders in Drive
         getOrCreateDriveFolder();
       }
     });
     gisInited = true;
-    
+
     if (APP.driveSettings.driveConnected) {
       updateDriveStatusUI('disconnected', 'Requires Login');
     } else {
@@ -2858,7 +2972,7 @@ function connectGoogleDrive() {
     return;
   }
   const loginHint = appConfig.LOGIN_HINT_EMAIL || 'serg.racpsvpec@gmail.com';
-  tokenClient.requestAccessToken({ 
+  tokenClient.requestAccessToken({
     prompt: 'consent',
     login_hint: loginHint
   });
@@ -2872,11 +2986,11 @@ async function disconnectGoogleDrive() {
   } catch (e) {
     console.warn('Token revocation failed:', e);
   }
-  
+
   APP.googleAccessToken = null;
   APP.googleTokenExpiry = null;
   APP.driveSettings.driveConnected = false;
-  
+
   try {
     await db.collection('settings').doc('googleDrive').set({ driveConnected: false }, { merge: true });
     showToast('Google Drive disconnected.', 'info');
@@ -2890,34 +3004,34 @@ async function ensureValidAccessToken() {
   if (APP.googleAccessToken && Date.now() < APP.googleTokenExpiry - 60000) {
     return APP.googleAccessToken;
   }
-  
+
   return new Promise((resolve, reject) => {
     if (!tokenClient) {
       reject(new Error('Google Client ID is not configured.'));
       return;
     }
-    
+
     const originalCallback = tokenClient.callback;
     tokenClient.callback = async (response) => {
       tokenClient.callback = originalCallback;
-      
+
       if (response.error !== undefined) {
         reject(new Error('Google Auth Failed: ' + response.error));
         return;
       }
-      
+
       APP.googleAccessToken = response.access_token;
       APP.googleTokenExpiry = Date.now() + (response.expires_in * 1000);
-      
+
       APP.driveSettings.driveConnected = true;
       await db.collection('settings').doc('googleDrive').set({ driveConnected: true }, { merge: true });
       updateDriveStatusUI('connected');
-      
+
       resolve(response.access_token);
     };
-    
+
     const loginHint = appConfig.LOGIN_HINT_EMAIL || 'serg.racpsvpec@gmail.com';
-    tokenClient.requestAccessToken({ 
+    tokenClient.requestAccessToken({
       prompt: '',
       login_hint: loginHint
     });
@@ -2930,7 +3044,7 @@ async function getOrCreateDriveFolder() {
     const accessToken = await ensureValidAccessToken();
     const folderName = APP.driveSettings.driveFolderName || 'Rotaract_Attendance';
     const savedFolderId = APP.driveSettings.driveFolderId || '';
-    
+
     if (savedFolderId) {
       // Validate saved folder ID
       const testUrl = `https://www.googleapis.com/drive/v3/files/${savedFolderId}?fields=id,name,trashed`;
@@ -2944,18 +3058,18 @@ async function getOrCreateDriveFolder() {
         }
       }
     }
-    
+
     // Search for existing folder by name
     const query = `name = '${folderName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
     const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name)`;
-    
+
     const searchRes = await fetch(searchUrl, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
-    
+
     if (!searchRes.ok) throw new Error('Failed to query Drive folders.');
     const searchData = await searchRes.json();
-    
+
     if (searchData.files && searchData.files.length > 0) {
       const folderId = searchData.files[0].id;
       APP.driveSettings.driveFolderId = folderId;
@@ -2964,14 +3078,14 @@ async function getOrCreateDriveFolder() {
       if (idInput) idInput.value = folderId;
       return folderId;
     }
-    
+
     // Create new folder
     const createUrl = `https://www.googleapis.com/drive/v3/files`;
     const folderMetadata = {
       name: folderName,
       mimeType: 'application/vnd.google-apps.folder'
     };
-    
+
     const createRes = await fetch(createUrl, {
       method: 'POST',
       headers: {
@@ -2980,16 +3094,16 @@ async function getOrCreateDriveFolder() {
       },
       body: JSON.stringify(folderMetadata)
     });
-    
+
     if (!createRes.ok) throw new Error('Folder creation request failed.');
     const folder = await createRes.json();
-    
+
     APP.driveSettings.driveFolderId = folder.id;
     await db.collection('settings').doc('googleDrive').update({ driveFolderId: folder.id });
-    
+
     const idInput = $('#drive-folder-id');
     if (idInput) idInput.value = folder.id;
-    
+
     showToast(`Created folder "${folderName}" in Drive.`, 'success');
     return folder.id;
   } catch (err) {
@@ -3004,13 +3118,13 @@ async function createYearMonthFolders(parentFolderId, dateStr) {
     const dateObj = dateStr ? new Date(dateStr + 'T00:00:00') : new Date();
     const year = String(dateObj.getFullYear());
     const month = dateObj.toLocaleString('en', { month: 'long' }); // e.g. July
-    
+
     // 1. Get/Create Year Folder
     let query = `name = '${year}' and '${parentFolderId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
     let searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id)`;
     let res = await fetch(searchUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
     let data = await res.json();
-    
+
     let yearFolderId;
     if (data.files && data.files.length > 0) {
       yearFolderId = data.files[0].id;
@@ -3030,13 +3144,13 @@ async function createYearMonthFolders(parentFolderId, dateStr) {
       const folder = await createRes.json();
       yearFolderId = folder.id;
     }
-    
+
     // 2. Get/Create Month Folder
     query = `name = '${month}' and '${yearFolderId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
     searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id)`;
     res = await fetch(searchUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
     data = await res.json();
-    
+
     let monthFolderId;
     if (data.files && data.files.length > 0) {
       monthFolderId = data.files[0].id;
@@ -3056,7 +3170,7 @@ async function createYearMonthFolders(parentFolderId, dateStr) {
       const folder = await createRes.json();
       monthFolderId = folder.id;
     }
-    
+
     return monthFolderId;
   } catch (err) {
     console.error('Error creating Year/Month folders:', err);
@@ -3082,14 +3196,14 @@ function createPicker(accessToken) {
     const view = new google.picker.DocsView(google.picker.ViewId.FOLDERS)
       .setMimeTypes('application/vnd.google-apps.folder')
       .setSelectFolderEnabled(true);
-      
+
     const picker = new google.picker.PickerBuilder()
       .addView(view)
       .setOAuthToken(accessToken)
       .setCallback(pickerCallback)
       .setTitle('Select Rotaract Attendance folder')
       .build();
-      
+
     picker.setVisible(true);
   } catch (err) {
     console.error('Error loading Google Picker:', err);
@@ -3102,10 +3216,10 @@ function pickerCallback(data) {
     const folder = data.docs[0];
     const idInput = $('#drive-folder-id');
     const nameInput = $('#drive-folder-name');
-    
+
     if (idInput) idInput.value = folder.id;
     if (nameInput) nameInput.value = folder.name;
-    
+
     showToast(`Folder selected: ${folder.name}`, 'success');
   }
 }
@@ -3114,36 +3228,36 @@ function pickerCallback(data) {
 async function uploadSessionPDFToDrive(sessionId) {
   const session = APP.sessions.find(s => s.id === sessionId);
   if (!session) return;
-  
+
   // Set UI state to Syncing
   session.uploadStatus = 'Syncing';
   renderReportsList();
-  
+
   try {
     showToast(`Syncing "${session.eventName}" to Google Drive...`, 'info');
-    
+
     // Get valid access token
     const accessToken = await ensureValidAccessToken();
-    
+
     // Retrieve parent folder ID
     const rootFolderId = await getOrCreateDriveFolder();
     let targetFolderId = rootFolderId;
-    
+
     // Check for subfolder structure
     if (APP.driveSettings.organizeYearMonth !== false) {
       targetFolderId = await createYearMonthFolders(rootFolderId, session.date);
     }
-    
+
     // Generate PDF in-memory (download=false dry run)
     const doc = await exportSessionPDF(sessionId, false);
     if (!doc) throw new Error('PDF generation failed.');
-    
+
     const blob = doc.output('blob');
-    
+
     // Auto File Naming format: EventName_Date.pdf
     const safeName = (session.eventName || 'Report').replace(/[^a-zA-Z0-9]/g, '_');
     const filename = `${safeName}_${session.date || 'undated'}.pdf`;
-    
+
     // Execute Multipart File Upload (use existing fileId if available)
     let uploadResult;
     try {
@@ -3156,10 +3270,10 @@ async function uploadSessionPDFToDrive(sessionId) {
         throw err;
       }
     }
-    
+
     const fileId = uploadResult.id;
     const fileUrl = uploadResult.webViewLink;
-    
+
     // Save details to Firestore
     const updatePayload = {
       uploadStatus: 'Synced',
@@ -3169,12 +3283,12 @@ async function uploadSessionPDFToDrive(sessionId) {
       uploadedBy: auth.currentUser?.email || 'unknown',
       driveFolderId: targetFolderId
     };
-    
+
     await db.collection('sessions').doc(sessionId).update(updatePayload);
-    
+
     // Sync Local App State
     Object.assign(session, updatePayload);
-    
+
     // Save last synced info in global settings
     const settingSyncUpdate = {
       lastSync: firebase.firestore.FieldValue.serverTimestamp(),
@@ -3186,25 +3300,25 @@ async function uploadSessionPDFToDrive(sessionId) {
       Object.assign(APP.driveSettings, settingSyncUpdate);
       APP.driveSettings.lastSync = { seconds: Date.now() / 1000 };
     }
-    
+
     showToast(`"${filename}" uploaded to Google Drive.`, 'success');
-    
+
     // UI refreshes
     renderReportsList();
     if (APP.currentTab === 'settings') {
       updateLastSyncUI();
     }
-    
+
   } catch (err) {
     console.error('Google Drive Sync error:', err);
     showToast('Failed to upload PDF to Google Drive.', 'error');
-    
+
     // Mark status in DB and State
     try {
       await db.collection('sessions').doc(sessionId).update({ uploadStatus: 'Failed' });
       session.uploadStatus = 'Failed';
       renderReportsList();
-      
+
       const settingSyncUpdate = {
         lastSync: firebase.firestore.FieldValue.serverTimestamp(),
         lastUpload: `${session.eventName}_${session.date}.pdf`,
@@ -3224,7 +3338,7 @@ async function uploadSessionPDFToDrive(sessionId) {
 
 async function sendPDFToGoogleDrive(pdfBlob, filename, parentFolderId, fileId = null) {
   const accessToken = await ensureValidAccessToken();
-  
+
   // Multipart body composition
   const metadata = {
     name: filename,
@@ -3233,15 +3347,15 @@ async function sendPDFToGoogleDrive(pdfBlob, filename, parentFolderId, fileId = 
   if (!fileId) {
     metadata.parents = [parentFolderId];
   }
-  
+
   const formData = new FormData();
   formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
   formData.append('file', pdfBlob);
-  
+
   const uploadUrl = fileId
     ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart&fields=id,webViewLink`
     : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink';
-  
+
   const res = await fetch(uploadUrl, {
     method: fileId ? 'PATCH' : 'POST',
     headers: {
@@ -3249,12 +3363,12 @@ async function sendPDFToGoogleDrive(pdfBlob, filename, parentFolderId, fileId = 
     },
     body: formData
   });
-  
+
   if (!res.ok) {
     const errorDetails = await res.text();
     throw new Error(`Upload Failed (${res.status}): ${errorDetails}`);
   }
-  
+
   return await res.json();
 }
 
@@ -3262,25 +3376,25 @@ async function sendPDFToGoogleDrive(pdfBlob, filename, parentFolderId, fileId = 
 async function testDriveConnection() {
   const btn = $('#drive-test-btn');
   if (!btn) return;
-  
+
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-circle-notch fa-spin" style="margin-right:6px;"></i>Testing...';
-  
+
   try {
     const accessToken = await ensureValidAccessToken();
-    
+
     // Try listing files in target folder to check permissions
     const folderId = await getOrCreateDriveFolder();
     const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&pageSize=3&fields=files(id,name)`;
-    
+
     const res = await fetch(url, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
-    
+
     if (!res.ok) {
       throw new Error(`Permission check failed: ${res.status}`);
     }
-    
+
     showToast('Drive connection test passed!', 'success');
   } catch (err) {
     console.error('Drive connection test error:', err);
