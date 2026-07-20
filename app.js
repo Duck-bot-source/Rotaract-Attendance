@@ -186,7 +186,7 @@ function initAuthListener() {
 
     // Hide preloader
     const hasSeenIntro = sessionStorage.getItem('hasSeenIntro') === 'true';
-    const dismissDelay = hasSeenIntro ? 0 : 1800;
+    const dismissDelay = hasSeenIntro ? 0 : 500;
 
     setTimeout(() => {
       if (preloader) {
@@ -194,7 +194,7 @@ function initAuthListener() {
           preloader.remove();
         } else {
           preloader.classList.add('fade-out');
-          setTimeout(() => preloader.remove(), 800);
+          setTimeout(() => preloader.remove(), 400);
           sessionStorage.setItem('hasSeenIntro', 'true');
         }
       }
@@ -705,7 +705,7 @@ function renderMembersList() {
           <div class="member-avatar ${avatarClass}">${initials}</div>
           <div class="member-info">
             <div class="member-name">${escapeHtml(m.name)}</div>
-            <div class="member-role">${escapeHtml(m.role || 'Member')} <span class="badge ${badgeClass}">${m.category}</span></div>
+            <div class="member-role">${escapeHtml(m.role || 'Member')} <span class="badge ${badgeClass}">${m.category === 'Rotaractor' ? 'Green Rotaractor' : (m.category === 'Other Rotaractor' ? 'Rotaractor' : m.category)}</span></div>
             ${m.department || m.year ? `<div class="member-details">${escapeHtml(m.department || '')}${m.department && m.year ? ' · ' : ''}${escapeHtml(m.year || '')}</div>` : ''}
           </div>
           <div class="member-actions">
@@ -718,8 +718,8 @@ function renderMembersList() {
 
   // Render each section
   renderGridContent(boardMembers, 'board-officials-grid', 'Board Official');
-  renderGridContent(rotaractorMembers, 'rotaractors-grid', 'Rotaractor');
-  renderGridContent(otherMembers, 'other-rotaractors-grid', 'Other Rotaractor');
+  renderGridContent(rotaractorMembers, 'rotaractors-grid', 'Green Rotaractor');
+  renderGridContent(otherMembers, 'other-rotaractors-grid', 'Rotaractor');
 
   // Show/hide sections based on filter and counts
   const toggleSection = (sectionId, count, category) => {
@@ -780,9 +780,9 @@ function renderMemberChips() {
 
   container.innerHTML = `
     <div class="chip"><i class="fas fa-users"></i> All Members <span class="chip-count">${APP.members.length}</span></div>
-    <div class="chip"><i class="fas fa-user-tie"></i> Board Officials <span class="chip-count">${boardCount}</span></div>
-    <div class="chip"><i class="fas fa-user"></i> Rotaractors <span class="chip-count">${rotaractorCount}</span></div>
-    <div class="chip"><i class="fas fa-user-friends"></i> Others <span class="chip-count">${otherCount}</span></div>
+    <div class="chip board"><i class="fas fa-user-tie"></i> Board Officials <span class="chip-count">${boardCount}</span></div>
+    <div class="chip rotaractor"><i class="fas fa-user"></i> Green Rotaractors <span class="chip-count">${rotaractorCount}</span></div>
+    <div class="chip other"><i class="fas fa-user-friends"></i> Rotaractors <span class="chip-count">${otherCount}</span></div>
   `;
 }
 
@@ -1193,9 +1193,10 @@ function renderAttendanceLists() {
     if (!container) return members.length;
 
     if (members.length === 0) {
+      const displayCategory = category === 'Rotaractor' ? 'Green Rotaractor' : (category === 'Other Rotaractor' ? 'Rotaractor' : category);
       container.innerHTML = `
         <div class="empty-state" style="padding:24px;">
-          <p style="color:var(--text-tertiary); font-size:0.85rem;">No ${category.toLowerCase()}s found</p>
+          <p style="color:var(--text-tertiary); font-size:0.85rem;">No ${displayCategory.toLowerCase()}s found</p>
         </div>`;
       return 0;
     }
@@ -1955,21 +1956,21 @@ function renderCategoryBreakdown() {
     <div class="category-bar-item">
       <span class="category-bar-label">Board Officials</span>
       <div class="category-bar-track">
-        <div class="category-bar-fill blue" style="width:${(boardCount / total) * 100}%;"></div>
+        <div class="category-bar-fill red" style="width:${(boardCount / total) * 100}%;"></div>
       </div>
       <span class="category-bar-count" id="dash-breakdown-board">0</span>
     </div>
     <div class="category-bar-item">
-      <span class="category-bar-label">Rotaractors</span>
+      <span class="category-bar-label">Green Rotaractors</span>
       <div class="category-bar-track">
-        <div class="category-bar-fill gold" style="width:${(rotaractorCount / total) * 100}%;"></div>
+        <div class="category-bar-fill green" style="width:${(rotaractorCount / total) * 100}%;"></div>
       </div>
       <span class="category-bar-count" id="dash-breakdown-rotaractor">0</span>
     </div>
     <div class="category-bar-item">
-      <span class="category-bar-label">Other Rotaractors</span>
+      <span class="category-bar-label">Rotaractors</span>
       <div class="category-bar-track">
-        <div class="category-bar-fill purple" style="width:${(otherCount / total) * 100}%;"></div>
+        <div class="category-bar-fill blue" style="width:${(otherCount / total) * 100}%;"></div>
       </div>
       <span class="category-bar-count" id="dash-breakdown-other">0</span>
     </div>
@@ -2252,7 +2253,7 @@ function exportSessionPDF(sessionId, download = true) {
         const roleLower = r.role.toLowerCase();
         if (roleLower.includes('ipp')) prefix = 'Rtr. IPP. ';
       }
-      const line = `${num}.   ${prefix}${r.memberName || ''}`;
+      const line = `${num}.   ${prefix}${(r.memberName || '').toUpperCase()}`;
 
       // Page overflow check (A4 boundary buffer)
       if (currentY > pageH - 20) {
@@ -2332,7 +2333,7 @@ function exportSessionExcel(sessionId) {
     presentRecords.forEach((r, i) => {
       sheetData.push([
         i + 1,
-        r.memberName || '',
+        (r.memberName || '').toUpperCase(),
         'Present'
       ]);
     });
