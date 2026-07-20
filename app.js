@@ -1487,8 +1487,8 @@ async function doSaveAttendance(date, eventTime, eventName, serviceType, venue) 
     // Refresh sessions first so that APP.sessions contains the saved/updated session
     await fetchSessions();
 
-    // Trigger auto-upload to Google Drive if enabled and authenticated
-    if (APP.driveSettings && APP.driveSettings.driveConnected && APP.driveSettings.autoUpload) {
+    // Trigger auto-upload to Google Drive on UPDATE only if enabled and authenticated
+    if (APP.editingSessionId && APP.driveSettings && APP.driveSettings.driveConnected && APP.driveSettings.autoUpload) {
       uploadSessionPDFToDrive(sessionId).catch(err => {
         console.error('Auto-upload to Google Drive failed:', err);
       });
