@@ -3081,6 +3081,29 @@ async function getOrCreateDriveFolder() {
     const folderName = APP.driveSettings.driveFolderName || 'Rotaract_Attendance';
     const savedFolderId = APP.driveSettings.driveFolderId || '';
 
+    // Search for existing folder by name first to ensure we use the correct root
+    const query = `name = '${folderName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
+    const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name)`;
+
+    const searchRes = await fetch(searchUrl, {
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    });
+
+    if (searchRes.ok) {
+      const searchData = await searchRes.json();
+      if (searchData.files && searchData.files.length > 0) {
+        const folderId = searchData.files[0].id;
+        // Keep stored folder ID in sync
+        if (savedFolderId !== folderId) {
+          APP.driveSettings.driveFolderId = folderId;
+          await db.collection('settings').doc('googleDrive').update({ driveFolderId: folderId });
+          const idInput = $('#drive-folder-id');
+          if (idInput) idInput.value = folderId;
+        }
+        return folderId;
+      }
+    }
+
     if (savedFolderId) {
       // Validate saved folder ID
       const testUrl = `https://www.googleapis.com/drive/v3/files/${savedFolderId}?fields=id,name,trashed`;
@@ -3093,26 +3116,6 @@ async function getOrCreateDriveFolder() {
           return savedFolderId;
         }
       }
-    }
-
-    // Search for existing folder by name
-    const query = `name = '${folderName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
-    const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name)`;
-
-    const searchRes = await fetch(searchUrl, {
-      headers: { 'Authorization': `Bearer ${accessToken}` }
-    });
-
-    if (!searchRes.ok) throw new Error('Failed to query Drive folders.');
-    const searchData = await searchRes.json();
-
-    if (searchData.files && searchData.files.length > 0) {
-      const folderId = searchData.files[0].id;
-      APP.driveSettings.driveFolderId = folderId;
-      await db.collection('settings').doc('googleDrive').update({ driveFolderId: folderId });
-      const idInput = $('#drive-folder-id');
-      if (idInput) idInput.value = folderId;
-      return folderId;
     }
 
     // Create new folder
@@ -3408,6 +3411,79 @@ async function sendPDFToGoogleDrive(pdfBlob, filename, parentFolderId, fileId = 
   return await res.json();
 }
 
+async function cleanUpIncorrectDriveFolders(rootFolderId, accessToken) {
+  try {
+    const listUrl = (parentId) => `https://www.googleapis.com/drive/v3/files?q='${parentId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType)`;
+
+    const trashFile = async (fileId) => {
+      const trashUrl = `https://www.googleapis.com/drive/v3/files/${fileId}`;
+      await fetch(trashUrl, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ trashed: true })
+      });
+    };
+
+    // 1. Get all items in the root Rotaract_Attendance folder
+    let res = await fetch(listUrl(rootFolderId), { headers: { 'Authorization': `Bearer ${accessToken}` } });
+    if (!res.ok) return;
+    let data = await res.json();
+    const rootItems = data.files || [];
+
+    for (const item of rootItems) {
+      if (item.mimeType === 'application/vnd.google-apps.folder') {
+        const isYear = /^\d{4}$/.test(item.name);
+        if (!isYear) {
+          // Delete folder if not a 4-digit year (e.g. invalid subfolders)
+          console.log(`Trashing invalid folder in root: ${item.name}`);
+          await trashFile(item.id);
+        } else {
+          // Check inside the valid year folder
+          let yearRes = await fetch(listUrl(item.id), { headers: { 'Authorization': `Bearer ${accessToken}` } });
+          if (yearRes.ok) {
+            let yearData = await yearRes.json();
+            const yearItems = yearData.files || [];
+            
+            const validMonths = [
+              'January', 'February', 'March', 'April', 'May', 'June',
+              'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+
+            for (const yearItem of yearItems) {
+              if (yearItem.mimeType === 'application/vnd.google-apps.folder') {
+                const isMonth = validMonths.includes(yearItem.name);
+                if (!isMonth) {
+                  // Not a month folder, delete it
+                  console.log(`Trashing invalid folder inside Year: ${yearItem.name}`);
+                  await trashFile(yearItem.id);
+                } else {
+                  // Inside valid month folder (e.g. July) -> delete any subfolders (e.g. duplicate "2026")
+                  let monthRes = await fetch(listUrl(yearItem.id), { headers: { 'Authorization': `Bearer ${accessToken}` } });
+                  if (monthRes.ok) {
+                    let monthData = await monthRes.json();
+                    const monthItems = monthData.files || [];
+                    for (const monthItem of monthItems) {
+                      if (monthItem.mimeType === 'application/vnd.google-apps.folder') {
+                        console.log(`Trashing nested folder inside Month: ${monthItem.name}`);
+                        await trashFile(monthItem.id);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error cleaning up Drive folders:', err);
+  }
+}
+
 // 6. Test Connection
 async function testDriveConnection() {
   const btn = $('#drive-test-btn');
@@ -3431,7 +3507,10 @@ async function testDriveConnection() {
       throw new Error(`Permission check failed: ${res.status}`);
     }
 
-    showToast('Drive connection test passed!', 'success');
+    // Run clean up on incorrect folders automatically
+    await cleanUpIncorrectDriveFolders(folderId, accessToken);
+
+    showToast('Drive connection test passed and folders cleaned up!', 'success');
   } catch (err) {
     console.error('Drive connection test error:', err);
     showToast('Connection check failed. Please check client permissions.', 'error');
