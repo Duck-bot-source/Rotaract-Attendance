@@ -2219,7 +2219,7 @@ function exportSessionPDF(sessionId, download = true) {
 
     // Event Info fields list
     const infoFields = [
-      { label: 'Event Name :', val: eventName },
+      { label: 'Project Name :', val: eventName },
       { label: 'Venue :', val: venue },
       { label: 'Date :', val: formatDateDMY(date) },
       { label: 'Time :', val: formatTimeRange(time) },
@@ -2259,6 +2259,9 @@ function exportSessionPDF(sessionId, download = true) {
       if (currentY > pageH - 20) {
         doc.addPage();
         currentY = drawPageTemplate();
+        doc.setFontSize(11);
+        doc.setFont('times', 'normal');
+        doc.setTextColor(17, 17, 17);
       }
 
       doc.text(line, 20, currentY);
@@ -2357,7 +2360,7 @@ function exportSessionExcel(sessionId) {
 
     XLSX.utils.book_append_sheet(wb, sheet, 'Attendance');
 
-    const filename = `ROTARACT_PSVPEC_Attendance_${session.eventName?.replace(/[^a-zA-Z0-9]/g, '_') || 'Report'}_${session.date || 'undated'}.xlsx`;
+    const filename = `ROTARACT_PSVPEC_${(session.serviceType || 'Attendance').replace(/[^a-zA-Z0-9]/g, '_')}_${session.eventName?.replace(/[^a-zA-Z0-9]/g, '_') || 'Report'}_${session.date || 'undated'}.xlsx`;
     XLSX.writeFile(wb, filename);
 
     showToast('Excel exported successfully!', 'success');
@@ -3446,7 +3449,7 @@ async function cleanUpIncorrectDriveFolders(rootFolderId, accessToken) {
           if (yearRes.ok) {
             let yearData = await yearRes.json();
             const yearItems = yearData.files || [];
-            
+
             const validMonths = [
               'January', 'February', 'March', 'April', 'May', 'June',
               'July', 'August', 'September', 'October', 'November', 'December'
